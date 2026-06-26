@@ -51,15 +51,123 @@ export interface OhlcData {
 }
 
 // Mock database to ensure high fidelity even during CoinGecko 429 Rate Limits
-const MOCK_COINS: Record<string, { name: string; symbol: string; price: number; change24h: number; cap: string; volume: string }> = {
-  bitcoin: { name: "Bitcoin", symbol: "BTC", price: 64210.50, change24h: 2.45, cap: "$1.2T", volume: "$34.8B" },
-  ethereum: { name: "Ethereum", symbol: "ETH", price: 3452.12, change24h: 1.82, cap: "$415.2B", volume: "$18.5B" },
-  solana: { name: "Solana", symbol: "SOL", price: 142.85, change24h: -0.92, cap: "$63.1B", volume: "$3.2B" },
-  chainlink: { name: "Chainlink", symbol: "LINK", price: 18.42, change24h: 5.10, cap: "$10.8B", volume: "$850M" },
-  binancecoin: { name: "BNB", symbol: "BNB", price: 585.20, change24h: 1.20, cap: "$88.5B", volume: "$1.1B" },
-  ripple: { name: "Ripple", symbol: "XRP", price: 0.58, change24h: -0.15, cap: "$32.4B", volume: "$950M" },
-  cardano: { name: "Cardano", symbol: "ADA", price: 0.38, change24h: -2.30, cap: "$13.5B", volume: "$410M" },
-  dogecoin: { name: "Dogecoin", symbol: "DOGE", price: 0.12, change24h: -4.50, cap: "$17.2B", volume: "$1.2B" }
+const MOCK_COINS: Record<string, {
+  name: string;
+  symbol: string;
+  price: number;
+  change24h: number;
+  cap: string;
+  volume: string;
+  creator: string;
+  launchYear: number;
+  consensus: string;
+  supply: string;
+  description: string;
+}> = {
+  bitcoin: {
+    name: "Bitcoin",
+    symbol: "BTC",
+    price: 64210.50,
+    change24h: 2.45,
+    cap: "$1.2T",
+    volume: "$34.8B",
+    creator: "Satoshi Nakamoto",
+    launchYear: 2009,
+    consensus: "Proof of Work (PoW)",
+    supply: "19.5M BTC",
+    description: "Bitcoin is the world's first and most widely adopted decentralized digital currency, enabling peer-to-peer transactions without intermediaries."
+  },
+  ethereum: {
+    name: "Ethereum",
+    symbol: "ETH",
+    price: 3452.12,
+    change24h: 1.82,
+    cap: "$415.2B",
+    volume: "$18.5B",
+    creator: "Vitalik Buterin",
+    launchYear: 2015,
+    consensus: "Proof of Stake (PoS)",
+    supply: "120.2M ETH",
+    description: "Ethereum is a decentralized, open-source blockchain with smart contract functionality. Ether is the native cryptocurrency of the platform."
+  },
+  solana: {
+    name: "Solana",
+    symbol: "SOL",
+    price: 142.85,
+    change24h: -0.92,
+    cap: "$63.1B",
+    volume: "$3.2B",
+    creator: "Anatoly Yakovenko",
+    launchYear: 2020,
+    consensus: "Proof of History (PoH)",
+    supply: "440.1M SOL",
+    description: "Solana is a blockchain platform designed to host decentralized, scalable applications. It aims to provide fast transaction speeds and low fees."
+  },
+  chainlink: {
+    name: "Chainlink",
+    symbol: "LINK",
+    price: 18.42,
+    change24h: 5.10,
+    cap: "$10.8B",
+    volume: "$850M",
+    creator: "Sergey Nazarov",
+    launchYear: 2017,
+    consensus: "Oracle Network Consensus",
+    supply: "587M LINK",
+    description: "Chainlink is a decentralized oracle network that provides real-world data to smart contracts on the blockchain, bridging off-chain and on-chain systems."
+  },
+  binancecoin: {
+    name: "BNB",
+    symbol: "BNB",
+    price: 585.20,
+    change24h: 1.20,
+    cap: "$88.5B",
+    volume: "$1.1B",
+    creator: "Changpeng Zhao",
+    launchYear: 2017,
+    consensus: "Proof of Staked Authority (PoSA)",
+    supply: "147.5M BNB",
+    description: "BNB powers the BNB Chain ecosystem. It is the native token of the Binance cryptocurrency exchange and its smart contract network."
+  },
+  ripple: {
+    name: "Ripple",
+    symbol: "XRP",
+    price: 0.58,
+    change24h: -0.15,
+    cap: "$32.4B",
+    volume: "$950M",
+    creator: "Arthur Britto, Jed McCaleb",
+    launchYear: 2012,
+    consensus: "Ripple Protocol Consensus Algorithm",
+    supply: "55.4B XRP",
+    description: "XRP is a digital asset built for global real-time payments, offering financial institutions a reliable, on-demand option to source liquidity."
+  },
+  cardano: {
+    name: "Cardano",
+    symbol: "ADA",
+    price: 0.38,
+    change24h: -2.30,
+    cap: "$13.5B",
+    volume: "$410M",
+    creator: "Charles Hoskinson",
+    launchYear: 2017,
+    consensus: "Ouroboros (PoS)",
+    supply: "35.6B ADA",
+    description: "Cardano is a proof-of-stake blockchain platform that says its goal is to allow changemakers, innovators and visionaries to bring about positive global change."
+  },
+  dogecoin: {
+    name: "Dogecoin",
+    symbol: "DOGE",
+    price: 0.12,
+    change24h: -4.50,
+    cap: "$17.2B",
+    volume: "$1.2B",
+    creator: "Billy Markus, Jackson Palmer",
+    launchYear: 2013,
+    consensus: "Auxiliary Proof of Work (AuxPoW)",
+    supply: "143.4B DOGE",
+    description: "Dogecoin is an open-source peer-to-peer cryptocurrency. It is valued by its friendly community and was created as a lighthearted joke based on a popular meme."
+  }
 };
 
 const MOCK_TRENDING_ITEMS = [
@@ -69,9 +177,34 @@ const MOCK_TRENDING_ITEMS = [
   { id: "chainlink", name: "Chainlink", symbol: "LINK", price: "$18.42", change: 5.10, thumb: "https://assets.coingecko.com/coins/images/877/large/chainlink.png" }
 ];
 
-// Helper to generate mock chart points
+// Helper to generate mock chart points with realistic density
 function generateMockPoints(basePrice: number, days: number, volatility = 0.02): { chart: MarketChartPoint[], ohlc: OhlcData } {
-  const pointsCount = days === 1 ? 24 : days;
+  let pointsCount = days;
+  let interval = 86400000; // default 1 day in ms
+
+  if (days === 1) {
+    pointsCount = 24; // 24 hours
+    interval = 3600000; // 1 hour
+  } else if (days === 5) {
+    pointsCount = 40; // 5 days, 8 candles per day
+    interval = 10800000; // 3 hours
+  } else if (days === 30) {
+    pointsCount = 60; // 30 days, 2 candles per day
+    interval = 43200000; // 12 hours
+  } else if (days === 90) {
+    pointsCount = 90; // 90 days, daily
+    interval = 86400000; // 1 day
+  } else if (days === 180) {
+    pointsCount = 180;
+    interval = 86400000;
+  } else if (days === 365) {
+    pointsCount = 365;
+    interval = 86400000;
+  } else if (days >= 1825) {
+    pointsCount = 300;
+    interval = 604800000; // 7 days (weekly)
+  }
+
   const chart: MarketChartPoint[] = [];
   const now = Date.now();
   let currentPrice = basePrice;
@@ -80,7 +213,7 @@ function generateMockPoints(basePrice: number, days: number, volatility = 0.02):
   let max = basePrice;
 
   for (let i = pointsCount; i >= 0; i--) {
-    const time = now - i * (days === 1 ? 3600000 : 86400000);
+    const time = now - i * interval;
     const change = currentPrice * volatility * (Math.random() - 0.48); // Slight upward bias
     currentPrice += change;
     chart.push({ time, price: Number(currentPrice.toFixed(2)) });
@@ -168,10 +301,27 @@ export async function fetchCoinData(id: string, days: number): Promise<{
     change24h: number;
     marketCap: string;
     volume: string;
+    creator: string;
+    launchYear: number;
+    consensus: string;
+    supply: string;
+    description: string;
   };
 }> {
   const coinId = id.toLowerCase();
-  const mockInfo = MOCK_COINS[coinId] || { name: coinId.charAt(0).toUpperCase() + coinId.slice(1), symbol: coinId.toUpperCase().slice(0, 4), price: 100, change24h: 0, cap: "$10M", volume: "$1M" };
+  const mockInfo = MOCK_COINS[coinId] || {
+    name: coinId.charAt(0).toUpperCase() + coinId.slice(1),
+    symbol: coinId.toUpperCase().slice(0, 4),
+    price: 100,
+    change24h: 0,
+    cap: "$10M",
+    volume: "$1M",
+    creator: "Unknown",
+    launchYear: 2020,
+    consensus: "N/A",
+    supply: "N/A",
+    description: "No description available for this mock token."
+  };
 
   try {
     // Attempt fetching live chart
@@ -187,12 +337,8 @@ export async function fetchCoinData(id: string, days: number): Promise<{
     // Fetch simple price to get latest info
     const priceRes = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`);
     let details = {
-      name: mockInfo.name,
-      symbol: mockInfo.symbol,
-      price: mockInfo.price,
-      change24h: mockInfo.change24h,
-      marketCap: mockInfo.cap,
-      volume: mockInfo.volume
+      ...mockInfo,
+      marketCap: mockInfo.cap
     };
 
     if (priceRes.ok) {
@@ -200,8 +346,7 @@ export async function fetchCoinData(id: string, days: number): Promise<{
       const coinPriceInfo = priceJson[coinId];
       if (coinPriceInfo) {
         details = {
-          name: mockInfo.name,
-          symbol: mockInfo.symbol,
+          ...mockInfo,
           price: coinPriceInfo.usd,
           change24h: coinPriceInfo.usd_24h_change || 0,
           marketCap: coinPriceInfo.usd_market_cap ? `$${(coinPriceInfo.usd_market_cap / 1e9).toFixed(1)}B` : mockInfo.cap,
@@ -232,8 +377,7 @@ export async function fetchCoinData(id: string, days: number): Promise<{
       chartData: mock.chart,
       ohlc: mock.ohlc,
       coinDetails: {
-        name: mockInfo.name,
-        symbol: mockInfo.symbol,
+        ...mockInfo,
         price: mock.ohlc.close,
         change24h: mockInfo.change24h,
         marketCap: mockInfo.cap,
