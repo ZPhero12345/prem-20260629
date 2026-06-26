@@ -1,21 +1,23 @@
 import React from "react";
-import { Layout as AntLayout, Typography } from "antd";
-import { ThunderboltOutlined } from "@ant-design/icons";
+import { Layout as AntLayout, Typography, Button } from "antd";
+import { ThunderboltOutlined, SunOutlined, MoonOutlined } from "@ant-design/icons";
 
 const { Header, Content } = AntLayout;
 const { Title } = Typography;
 
 interface LayoutProps {
   children: React.ReactNode;
+  isDarkMode: boolean;
+  onToggleTheme: () => void;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTheme }) => {
   return (
-    <AntLayout style={{ minHeight: "100vh", background: "#131313" }}>
+    <AntLayout style={{ minHeight: "100vh", background: isDarkMode ? "#131313" : "#f5f5f5", transition: "background 0.3s ease" }}>
       {/* Sleek Top Navigation Header */}
       <Header style={{
-        background: "#0e0e0e",
-        borderBottom: "1px solid #2a2a2a",
+        background: isDarkMode ? "#0e0e0e" : "#ffffff",
+        borderBottom: `1px solid ${isDarkMode ? "#2a2a2a" : "#e8e8e8"}`,
         padding: "0 24px",
         display: "flex",
         alignItems: "center",
@@ -24,17 +26,36 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         position: "sticky",
         top: 0,
         zIndex: 10,
+        transition: "background 0.3s, border-color 0.3s"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 6, background: "#afc6ff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ThunderboltOutlined style={{ color: "#002d6c", fontSize: 18 }} />
+          <div style={{ 
+            width: 32, 
+            height: 32, 
+            borderRadius: 6, 
+            background: isDarkMode ? "#afc6ff" : "#1677ff", 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center" 
+          }}>
+            <ThunderboltOutlined style={{ color: isDarkMode ? "#002d6c" : "#ffffff", fontSize: 18 }} />
           </div>
-          <Title level={4} style={{ margin: 0, color: "#afc6ff", fontSize: 18 }}>CryptoMetric</Title>
+          <Title level={4} style={{ margin: 0, color: isDarkMode ? "#afc6ff" : "#1677ff", fontSize: 18, transition: "color 0.3s" }}>
+            CryptoMetric
+          </Title>
         </div>
+
+        {/* Theme Toggle Button */}
+        <Button 
+          type="text"
+          icon={isDarkMode ? <SunOutlined style={{ color: "#e5e2e1" }} /> : <MoonOutlined style={{ color: "#1f1f1f" }} />}
+          onClick={onToggleTheme}
+          style={{ fontSize: 16 }}
+        />
       </Header>
 
       {/* Main Content Area */}
-      <AntLayout style={{ background: "#131313" }}>
+      <AntLayout style={{ background: isDarkMode ? "#131313" : "#f5f5f5", transition: "background 0.3s" }}>
         <Content style={{ 
           padding: "24px", 
           maxWidth: 1200, 

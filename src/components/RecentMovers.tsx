@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Table, Typography, Button } from "antd";
+import { Card, Table, Typography, Button, theme } from "antd";
 import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 
 const { Text, Title } = Typography;
@@ -9,6 +9,8 @@ interface RecentMoversProps {
 }
 
 export const RecentMovers: React.FC<RecentMoversProps> = ({ onSelectAsset }) => {
+  const { token } = theme.useToken();
+
   const data = [
     { key: "bitcoin", name: "Bitcoin", symbol: "BTC", price: 64210.50, change: 2.45, cap: "$1.2T", thumb: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png" },
     { key: "ethereum", name: "Ethereum", symbol: "ETH", price: 3452.12, change: 1.82, cap: "$415.2B", thumb: "https://assets.coingecko.com/coins/images/279/large/ethereum.png" },
@@ -25,7 +27,7 @@ export const RecentMovers: React.FC<RecentMoversProps> = ({ onSelectAsset }) => 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src={record.thumb} alt={text} style={{ width: 24, height: 24, borderRadius: "50%" }} />
           <div>
-            <Text style={{ fontWeight: 600, color: "#e5e2e1" }}>{text}</Text>
+            <Text style={{ fontWeight: 600, color: token.colorText }}>{text}</Text>
             <Text type="secondary" style={{ fontSize: 12, display: "block" }}>{record.symbol}</Text>
           </div>
         </div>
@@ -37,7 +39,7 @@ export const RecentMovers: React.FC<RecentMoversProps> = ({ onSelectAsset }) => 
       key: "price",
       align: "right" as const,
       render: (val: number) => (
-        <Text style={{ fontWeight: 600, color: "#e5e2e1" }}>
+        <Text style={{ fontWeight: 600, color: token.colorText }}>
           {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val)}
         </Text>
       ),
@@ -51,7 +53,7 @@ export const RecentMovers: React.FC<RecentMoversProps> = ({ onSelectAsset }) => 
         const isPositive = val >= 0;
         return (
           <span style={{
-            color: isPositive ? "#6de039" : "#ffb4ab",
+            color: isPositive ? token.colorSuccess : token.colorError,
             fontWeight: 600,
             display: "flex",
             alignItems: "center",
@@ -70,7 +72,7 @@ export const RecentMovers: React.FC<RecentMoversProps> = ({ onSelectAsset }) => 
       key: "cap",
       align: "right" as const,
       responsive: ["md"] as any,
-      render: (val: string) => <Text style={{ color: "#e5e2e1" }}>{val}</Text>,
+      render: (val: string) => <Text style={{ color: token.colorText }}>{val}</Text>,
     },
     {
       title: "Action",
@@ -91,14 +93,15 @@ export const RecentMovers: React.FC<RecentMoversProps> = ({ onSelectAsset }) => 
   return (
     <Card
       style={{
-        background: "#1c1b1b",
-        border: "1px solid #303030",
+        background: token.colorBgContainer,
+        border: `1px solid ${token.colorBorderSecondary}`,
         marginBottom: 24,
+        transition: "background 0.3s, border-color 0.3s"
       }}
       bodyStyle={{ padding: 24 }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <Title level={4} style={{ margin: 0, color: "#e5e2e1" }}>
+        <Title level={4} style={{ margin: 0, color: token.colorText }}>
           Recent Market Movers
         </Title>
       </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Row, Col, Typography, Spin } from "antd";
+import { Card, Row, Col, Typography, Spin, theme } from "antd";
 import type { TrendingCoin } from "../utils/api";
 import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 
@@ -12,6 +12,8 @@ interface TrendingBarProps {
 }
 
 export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading, onSelectAsset }) => {
+  const { token } = theme.useToken();
+
   if (loading) {
     return (
       <div style={{ padding: "24px 0", textAlign: "center" }}>
@@ -22,7 +24,7 @@ export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading
 
   // Draw a simple mini sparkline path based on price change direction
   const renderMiniSparkline = (isPositive: boolean) => {
-    const strokeColor = isPositive ? "#6de039" : "#ffb4ab";
+    const strokeColor = isPositive ? token.colorSuccess : token.colorError;
     const path = isPositive
       ? "M0,25 Q15,10 30,18 T60,5"
       : "M0,5 Q15,20 30,10 T60,25";
@@ -35,7 +37,7 @@ export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading
 
   return (
     <div style={{ marginBottom: 24 }}>
-      <Text style={{ display: "block", marginBottom: 12, fontWeight: 600, color: "#8b90a0", textTransform: "uppercase", fontSize: 12, letterSpacing: "0.05em" }}>
+      <Text style={{ display: "block", marginBottom: 12, fontWeight: 600, color: token.colorTextDescription, textTransform: "uppercase", fontSize: 12, letterSpacing: "0.05em" }}>
         Trending Now
       </Text>
       <Row gutter={[16, 16]}>
@@ -49,9 +51,10 @@ export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading
                 hoverable
                 onClick={() => onSelectAsset(coin.item.id)}
                 style={{
-                  background: "#1c1b1b",
-                  border: "1px solid #303030",
+                  background: token.colorBgContainer,
+                  border: `1px solid ${token.colorBorderSecondary}`,
                   cursor: "pointer",
+                  transition: "background 0.3s, border-color 0.3s"
                 }}
                 bodyStyle={{ padding: 16 }}
               >
@@ -64,9 +67,9 @@ export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading
                     />
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <Text style={{ fontWeight: 600, color: "#e5e2e1" }}>{coin.item.symbol.toUpperCase()}</Text>
+                        <Text style={{ fontWeight: 600, color: token.colorText }}>{coin.item.symbol.toUpperCase()}</Text>
                         <span style={{
-                          color: isPositive ? "#6de039" : "#ffb4ab",
+                          color: isPositive ? token.colorSuccess : token.colorError,
                           fontSize: 11,
                           fontWeight: 500,
                           display: "flex",
@@ -83,7 +86,7 @@ export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading
                 </div>
 
                 <div style={{ marginTop: 12 }}>
-                  <Text style={{ fontSize: 16, fontWeight: 700, color: "#e5e2e1" }}>
+                  <Text style={{ fontSize: 16, fontWeight: 700, color: token.colorText }}>
                     {coin.item.data.price}
                   </Text>
                 </div>

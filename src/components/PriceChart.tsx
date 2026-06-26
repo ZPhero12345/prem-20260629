@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Radio, Typography, Spin, Row, Col } from "antd";
+import { Card, Radio, Typography, Spin, Row, Col, theme } from "antd";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { MarketChartPoint } from "../utils/api";
 
@@ -26,6 +26,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
   currentPrice,
   change24h,
 }) => {
+  const { token } = theme.useToken();
   const isPositive = change24h >= 0;
 
   const formatPrice = (val: number) => {
@@ -48,20 +49,21 @@ export const PriceChart: React.FC<PriceChartProps> = ({
   return (
     <Card
       style={{
-        background: "#1c1b1b",
-        border: "1px solid #303030",
+        background: token.colorBgContainer,
+        border: `1px solid ${token.colorBorderSecondary}`,
         marginBottom: 24,
+        transition: "background 0.3s, border-color 0.3s"
       }}
       bodyStyle={{ padding: 24 }}
     >
       <Row justify="space-between" align="middle" style={{ marginBottom: 24 }} gutter={[16, 16]}>
         <Col>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Title level={3} style={{ margin: 0, color: "#e5e2e1" }}>
+            <Title level={3} style={{ margin: 0, color: token.colorText }}>
               {assetName} ({assetSymbol.toUpperCase()}/USD)
             </Title>
             <span style={{
-              color: isPositive ? "#6de039" : "#ffb4ab",
+              color: isPositive ? token.colorSuccess : token.colorError,
               fontWeight: 600,
               fontSize: 16,
               background: isPositive ? "rgba(109, 224, 57, 0.1)" : "rgba(255, 180, 171, 0.1)",
@@ -71,7 +73,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
               {isPositive ? "+" : ""}{change24h.toFixed(2)}%
             </span>
           </div>
-          <Title level={2} style={{ margin: "8px 0 0 0", color: "#e5e2e1", fontWeight: 700 }}>
+          <Title level={2} style={{ margin: "8px 0 0 0", color: token.colorText, fontWeight: 700 }}>
             {formatPrice(currentPrice)}
           </Title>
         </Col>
@@ -101,23 +103,23 @@ export const PriceChart: React.FC<PriceChartProps> = ({
           <AreaChart data={chartData} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#afc6ff" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#afc6ff" stopOpacity={0.0} />
+                <stop offset="5%" stopColor={token.colorPrimary} stopOpacity={0.25} />
+                <stop offset="95%" stopColor={token.colorPrimary} stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <XAxis
               dataKey="time"
               tickFormatter={formatXAxis}
-              stroke="#414755"
-              tick={{ fill: "#8b90a0", fontSize: 11 }}
-              tickLine={{ stroke: "#414755" }}
+              stroke={token.colorBorder}
+              tick={{ fill: token.colorTextDescription || "#8b90a0", fontSize: 11 }}
+              tickLine={{ stroke: token.colorBorder }}
             />
             <YAxis
               domain={["auto", "auto"]}
               tickFormatter={(v) => formatPrice(v)}
-              stroke="#414755"
-              tick={{ fill: "#8b90a0", fontSize: 11 }}
-              tickLine={{ stroke: "#414755" }}
+              stroke={token.colorBorder}
+              tick={{ fill: token.colorTextDescription || "#8b90a0", fontSize: 11 }}
+              tickLine={{ stroke: token.colorBorder }}
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -125,15 +127,15 @@ export const PriceChart: React.FC<PriceChartProps> = ({
                   const data = payload[0].payload as MarketChartPoint;
                   return (
                     <div style={{
-                      background: "#1c1b1b",
-                      border: "1px solid #414755",
+                      background: token.colorBgContainer,
+                      border: `1px solid ${token.colorBorder}`,
                       padding: "8px 12px",
                       borderRadius: 4
                     }}>
-                      <Text style={{ display: "block", color: "#8b90a0", fontSize: 11 }}>
+                      <Text style={{ display: "block", color: token.colorTextDescription, fontSize: 11 }}>
                         {new Date(data.time).toLocaleString()}
                       </Text>
-                      <Text style={{ color: "#e5e2e1", fontWeight: 700, fontSize: 14 }}>
+                      <Text style={{ color: token.colorText, fontWeight: 700, fontSize: 14 }}>
                         {formatPrice(data.price)}
                       </Text>
                     </div>
@@ -145,7 +147,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
             <Area
               type="monotone"
               dataKey="price"
-              stroke="#afc6ff"
+              stroke={token.colorPrimary}
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#chartGradient)"

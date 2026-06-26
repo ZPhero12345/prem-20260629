@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { AutoComplete, Input, Spin } from "antd";
+import { AutoComplete, Input, Spin, theme } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { searchCoins } from "../utils/api";
 import type { SearchResult } from "../utils/api";
@@ -10,6 +10,7 @@ interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStateChange }) => {
+  const { token } = theme.useToken();
   const [value, setValue] = useState("");
   const [options, setOptions] = useState<{ value: string; label: React.ReactNode }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -84,13 +85,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStat
         <Input
           size="large"
           placeholder="Search assets (e.g. BTC, ETH, Solana)"
-          prefix={<SearchOutlined style={{ color: "#8b90a0", marginRight: 8 }} />}
+          prefix={<SearchOutlined style={{ color: token.colorTextDescription, marginRight: 8 }} />}
           suffix={loading ? <Spin size="small" /> : null}
           style={{
-            background: "#1c1b1b",
-            border: "1px solid #303030",
-            color: "#e5e2e1",
+            background: token.colorBgContainer,
+            border: `1px solid ${token.colorBorder}`,
+            color: token.colorText,
             height: 48,
+            transition: "background 0.3s, border-color 0.3s, color 0.3s"
           }}
         />
       </AutoComplete>
