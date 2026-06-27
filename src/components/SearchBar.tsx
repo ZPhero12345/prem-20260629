@@ -108,7 +108,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStat
         onSearch={handleSearch}
         onSelect={handleSelect}
         onChange={(data) => setValue(data)}
-        defaultActiveFirstOption={false}
+        defaultActiveFirstOption={true}
         onFocus={() => {
           onFocusStateChange(true);
           if (debounceRef.current) {
@@ -133,6 +133,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStat
           suffix={loading ? <Spin size="small" /> : null}
           onKeyDown={(e) => {
             if (e.key === "Enter" && options.length > 0) {
+              e.preventDefault();
+              e.stopPropagation();
               handleSelect(options[0].value);
             }
           }}
