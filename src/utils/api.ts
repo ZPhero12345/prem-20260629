@@ -86,13 +86,33 @@ interface CoinDataResult {
 const coinDataCache: Record<string, { timestamp: number; data: CoinDataResult }> = {};
 let cachedTrending: { timestamp: number; data: TrendingCoin[] } | null = null;
 
+// API configuration dynamically derived from Vite environment variables
+const API_KEY = (import.meta.env.VITE_COINGECKO_API_KEY || "").trim();
+const USE_API_KEY = import.meta.env.VITE_USE_API_KEY === "true";
+const SHOULD_USE_KEY = API_KEY && USE_API_KEY;
+
+const BASE_URL = SHOULD_USE_KEY
+  ? "https://api-demo.coingecko.com/api/v3"
+  : "https://api.coingecko.com/api/v3";
+
+function fetchFromApi(endpoint: string): Promise<Response> {
+  const url = `${BASE_URL}${endpoint}`;
+  const options: RequestInit = {};
+  if (SHOULD_USE_KEY) {
+    options.headers = {
+      "x-cg-demo-api-key": API_KEY
+    };
+  }
+  return fetch(url, options);
+}
+
 export async function fetchTrendingCoins(): Promise<TrendingCoin[]> {
   const now = Date.now();
   if (cachedTrending && now - cachedTrending.timestamp < CACHE_TTL_MS) {
     return cachedTrending.data;
   }
 
-  const response = await fetch("https://api.coingecko.com/api/v3/search/trending");
+  const response = await fetchFromApi("/search/trending");
   if (!response.ok) {
     throw new Error(`CoinGecko Trending API error: ${response.status} ${response.statusText}`);
   }
@@ -106,7 +126,7 @@ export async function fetchTrendingCoins(): Promise<TrendingCoin[]> {
 
 export async function searchCoins(query: string): Promise<SearchResult[]> {
   if (!query.trim()) return [];
-  const response = await fetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`);
+  const response = await fetchFromApi(`/search?query=${encodeURIComponent(query)}`);
   if (!response.ok) {
     throw new Error(`CoinGecko Search API error: ${response.status} ${response.statusText}`);
   }
@@ -139,14 +159,14 @@ export async function fetchCoinData(id: string, days: number | string): Promise<
   }
 
   // 1. Fetch metadata and details from coins/{id}
-  const coinRes = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`);
+  const coinRes = await fetchFromApi(`/coins/${coinId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`);
   if (!coinRes.ok) {
     throw new Error(`CoinGecko Coin Details API error: ${coinRes.status} ${coinRes.statusText}`);
   }
   const coinData = await coinRes.json();
 
   // 2. Fetch chart history
-  const chartRes = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
+  const chartRes = await fetchFromApi(`/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
   if (!chartRes.ok) {
     throw new Error(`CoinGecko Chart API error: ${chartRes.status} ${chartRes.statusText}`);
   }
