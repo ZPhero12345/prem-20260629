@@ -4,8 +4,8 @@ import type { MarketChartPoint } from "../utils/api";
 
 interface CandlestickChartProps {
   chartData: MarketChartPoint[];
-  selectedRange: number | string;
-  onRangeChange: (range: number | string) => void;
+  selectedRange: number;
+  onRangeChange: (range: number) => void;
   isFetching: boolean;
   hasData: boolean;
 }
@@ -48,8 +48,6 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
       chunkSize = 5; // 5-day candles (1 day points)
     } else if (selectedRange === 365) {
       chunkSize = 7; // 7-day (weekly) candles (1 day points)
-    } else if (selectedRange === "max") {
-      chunkSize = Math.max(14, Math.floor(chartData.length / 45)); // Bi-weekly/Monthly candles (1 day points)
     }
 
     // Ensure we don't end up with too few candles
@@ -203,7 +201,6 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
     { label: "3M", value: 90 },
     { label: "6M", value: 180 },
     { label: "1Y", value: 365 },
-    { label: "All", value: "max" },
   ];
 
   const latestCandle = candlestickData[candlestickData.length - 1] || { open: 0, high: 0, low: 0, close: 0 };
@@ -351,7 +348,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
               const dateObj = new Date(candle.time);
               const labelText = selectedRange === 1
                 ? dateObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
-                : (selectedRange === "max" || (typeof selectedRange === "number" && selectedRange >= 365))
+                : selectedRange >= 365
                   ? dateObj.toLocaleDateString("en-US", { month: "short", year: "numeric" })
                   : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 

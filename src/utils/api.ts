@@ -91,19 +91,15 @@ const API_KEY = (import.meta.env.VITE_COINGECKO_API_KEY || "").trim();
 const USE_API_KEY = import.meta.env.VITE_USE_API_KEY === "true";
 const SHOULD_USE_KEY = API_KEY && USE_API_KEY;
 
-const BASE_URL = SHOULD_USE_KEY
-  ? "https://api-demo.coingecko.com/api/v3"
-  : "https://api.coingecko.com/api/v3";
+const BASE_URL = "https://api.coingecko.com/api/v3";
 
 function fetchFromApi(endpoint: string): Promise<Response> {
-  const url = `${BASE_URL}${endpoint}`;
-  const options: RequestInit = {};
+  let url = `${BASE_URL}${endpoint}`;
   if (SHOULD_USE_KEY) {
-    options.headers = {
-      "x-cg-demo-api-key": API_KEY
-    };
+    const separator = url.includes("?") ? "&" : "?";
+    url = `${url}${separator}x_cg_demo_api_key=${API_KEY}`;
   }
-  return fetch(url, options);
+  return fetch(url);
 }
 
 export async function fetchTrendingCoins(): Promise<TrendingCoin[]> {
@@ -149,7 +145,7 @@ function formatSupply(num: number, symbol: string): string {
   return `${num.toLocaleString()} ${symbol.toUpperCase()}`;
 }
 
-export async function fetchCoinData(id: string, days: number | string): Promise<CoinDataResult> {
+export async function fetchCoinData(id: string, days: number): Promise<CoinDataResult> {
   const coinId = id.toLowerCase();
   const cacheKey = `${coinId}_${days}`;
   const now = Date.now();
