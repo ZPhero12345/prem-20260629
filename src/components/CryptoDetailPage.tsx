@@ -76,9 +76,25 @@ export const CryptoDetailPage: React.FC = () => {
   const isPositive = ohlc ? (ohlc.close >= ohlc.open) : coinDetails.change24h >= 0;
 
   return (
-    <div style={{ background: "transparent", minHeight: "80vh", padding: "16px 0" }}>
-      {/* Back button and page title */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+    <div style={{ 
+      background: "transparent", 
+      height: "100%", 
+      width: "100%", 
+      display: "flex", 
+      flexDirection: "column",
+      overflow: "hidden"
+    }}>
+      {/* Top bar: Back button, title, and actions */}
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        padding: "8px 24px",
+        height: 52,
+        borderBottom: `1px solid ${token.colorBorderSecondary}`,
+        background: token.colorBgContainer,
+        boxSizing: "border-box"
+      }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <Button onClick={() => navigate("/")} type="text" style={{ color: token.colorTextDescription, fontWeight: 600 }}>
             ← Back to Dashboard
@@ -100,31 +116,29 @@ export const CryptoDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <Row gutter={[24, 24]}>
+      {/* Main split-pane content */}
+      <div className="detail-layout-container">
         {/* LEFT COLUMN: Candlestick Chart */}
-        <Col xs={24} lg={16}>
-          <Card
-            style={{
-              background: token.colorBgContainer,
-              border: `1px solid ${token.colorBorderSecondary}`,
-              borderRadius: 8,
-              transition: "background 0.3s, border-color 0.3s",
-              position: "relative"
-            }}
-            styles={{ body: { padding: "16px 20px" } }}
-          >
-            <CandlestickChart
-              chartData={chartData}
-              selectedRange={selectedRange}
-              onRangeChange={setSelectedRange}
-              isFetching={isFetching}
-              hasData={!!assetData}
-            />
-          </Card>
-        </Col>
+        <div className="detail-chart-column" style={{ 
+          background: token.colorBgContainer,
+          padding: "20px 24px"
+        }}>
+          <CandlestickChart
+            chartData={chartData}
+            selectedRange={selectedRange}
+            onRangeChange={setSelectedRange}
+            isFetching={isFetching}
+            hasData={!!assetData}
+          />
+        </div>
 
         {/* RIGHT COLUMN: OHLC and Watchlist */}
-        <Col xs={24} lg={8}>
+        <div className="detail-sidebar-column" style={{ 
+          borderLeft: `1px solid ${token.colorBorderSecondary}`,
+          background: token.colorBgContainer,
+          padding: 24,
+          gap: 24
+        }}>
           {/* OHLC Statistics Card */}
           <Card
             title={<span style={{ color: token.colorText, fontSize: 14, fontWeight: 700 }}>OHLC Statistics</span>}
@@ -132,7 +146,6 @@ export const CryptoDetailPage: React.FC = () => {
               background: token.colorBgContainer,
               border: `1px solid ${token.colorBorderSecondary}`,
               borderRadius: 8,
-              marginBottom: 24,
               transition: "background 0.3s, border-color 0.3s"
             }}
             styles={{ body: { padding: 16 } }}
@@ -217,8 +230,8 @@ export const CryptoDetailPage: React.FC = () => {
               ))}
             </div>
           </Card>
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 };

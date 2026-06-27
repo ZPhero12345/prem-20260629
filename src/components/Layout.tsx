@@ -9,9 +9,10 @@ interface LayoutProps {
   children: React.ReactNode;
   isDarkMode: boolean;
   onToggleTheme: () => void;
+  fullBleed?: boolean;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTheme }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTheme, fullBleed }) => {
   return (
     <AntLayout style={{ minHeight: "100vh", background: isDarkMode ? "#131313" : "#f5f5f5", transition: "background 0.3s ease" }}>
       {/* Sleek Top Navigation Header */}
@@ -56,7 +57,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTh
 
       {/* Main Content Area */}
       <AntLayout style={{ background: isDarkMode ? "#131313" : "#f5f5f5", transition: "background 0.3s" }}>
-        <Content style={{ 
+        <Content style={fullBleed ? {
+          padding: 0,
+          width: "100%",
+          height: "calc(100vh - 64px)",
+          boxSizing: "border-box",
+          overflow: "hidden"
+        } : { 
           padding: "24px", 
           maxWidth: 1200, 
           width: "100%", 

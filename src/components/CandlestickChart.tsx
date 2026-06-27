@@ -207,7 +207,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
   const formatDefaultCurrency = (val: number) => `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
       {/* Header Stats Panel */}
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", gap: 12, fontSize: 13, color: token.colorTextDescription }}>
@@ -219,7 +219,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
       </div>
 
       {/* SVG Canvas Workspace */}
-      <div style={{ height: 400, position: "relative" }}>
+      <div style={{ flex: 1, position: "relative", minHeight: 0 }}>
         {(isFetching || !hasData) && (
           <div style={{
             position: "absolute",

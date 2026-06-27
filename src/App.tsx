@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { SearchBar } from "./components/SearchBar";
 import { TrendingBar } from "./components/TrendingBar";
@@ -33,6 +33,8 @@ interface AssetDataPayload {
 
 function MainAppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isCoinDetail = location.pathname.startsWith("/coin");
   const [selectedRange] = useState(7);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -106,7 +108,7 @@ function MainAppContent() {
         },
       }}
     >
-      <Layout isDarkMode={isDarkMode} onToggleTheme={() => setIsDarkMode(prev => !prev)}>
+      <Layout isDarkMode={isDarkMode} onToggleTheme={() => setIsDarkMode(prev => !prev)} fullBleed={isCoinDetail}>
         <Routes>
           <Route path="/" element={
             <>
