@@ -50,248 +50,22 @@ export interface OhlcData {
   close: number;
 }
 
-// Mock database to ensure high fidelity even during CoinGecko 429 Rate Limits
-const MOCK_COINS: Record<string, {
-  name: string;
-  symbol: string;
-  price: number;
-  change24h: number;
-  cap: string;
-  volume: string;
-  creator: string;
-  launchYear: number;
-  consensus: string;
-  supply: string;
-  description: string;
-}> = {
-  bitcoin: {
-    name: "Bitcoin",
-    symbol: "BTC",
-    price: 64210.50,
-    change24h: 2.45,
-    cap: "$1.2T",
-    volume: "$34.8B",
-    creator: "Satoshi Nakamoto",
-    launchYear: 2009,
-    consensus: "Proof of Work (PoW)",
-    supply: "19.5M BTC",
-    description: "Bitcoin is the world's first and most widely adopted decentralized digital currency, enabling peer-to-peer transactions without intermediaries."
-  },
-  ethereum: {
-    name: "Ethereum",
-    symbol: "ETH",
-    price: 3452.12,
-    change24h: 1.82,
-    cap: "$415.2B",
-    volume: "$18.5B",
-    creator: "Vitalik Buterin",
-    launchYear: 2015,
-    consensus: "Proof of Stake (PoS)",
-    supply: "120.2M ETH",
-    description: "Ethereum is a decentralized, open-source blockchain with smart contract functionality. Ether is the native cryptocurrency of the platform."
-  },
-  solana: {
-    name: "Solana",
-    symbol: "SOL",
-    price: 142.85,
-    change24h: -0.92,
-    cap: "$63.1B",
-    volume: "$3.2B",
-    creator: "Anatoly Yakovenko",
-    launchYear: 2020,
-    consensus: "Proof of History (PoH)",
-    supply: "440.1M SOL",
-    description: "Solana is a blockchain platform designed to host decentralized, scalable applications. It aims to provide fast transaction speeds and low fees."
-  },
-  chainlink: {
-    name: "Chainlink",
-    symbol: "LINK",
-    price: 18.42,
-    change24h: 5.10,
-    cap: "$10.8B",
-    volume: "$850M",
-    creator: "Sergey Nazarov",
-    launchYear: 2017,
-    consensus: "Oracle Network Consensus",
-    supply: "587M LINK",
-    description: "Chainlink is a decentralized oracle network that provides real-world data to smart contracts on the blockchain, bridging off-chain and on-chain systems."
-  },
-  binancecoin: {
-    name: "BNB",
-    symbol: "BNB",
-    price: 585.20,
-    change24h: 1.20,
-    cap: "$88.5B",
-    volume: "$1.1B",
-    creator: "Changpeng Zhao",
-    launchYear: 2017,
-    consensus: "Proof of Staked Authority (PoSA)",
-    supply: "147.5M BNB",
-    description: "BNB powers the BNB Chain ecosystem. It is the native token of the Binance cryptocurrency exchange and its smart contract network."
-  },
-  ripple: {
-    name: "Ripple",
-    symbol: "XRP",
-    price: 0.58,
-    change24h: -0.15,
-    cap: "$32.4B",
-    volume: "$950M",
-    creator: "Arthur Britto, Jed McCaleb",
-    launchYear: 2012,
-    consensus: "Ripple Protocol Consensus Algorithm",
-    supply: "55.4B XRP",
-    description: "XRP is a digital asset built for global real-time payments, offering financial institutions a reliable, on-demand option to source liquidity."
-  },
-  cardano: {
-    name: "Cardano",
-    symbol: "ADA",
-    price: 0.38,
-    change24h: -2.30,
-    cap: "$13.5B",
-    volume: "$410M",
-    creator: "Charles Hoskinson",
-    launchYear: 2017,
-    consensus: "Ouroboros (PoS)",
-    supply: "35.6B ADA",
-    description: "Cardano is a proof-of-stake blockchain platform that says its goal is to allow changemakers, innovators and visionaries to bring about positive global change."
-  },
-  dogecoin: {
-    name: "Dogecoin",
-    symbol: "DOGE",
-    price: 0.12,
-    change24h: -4.50,
-    cap: "$17.2B",
-    volume: "$1.2B",
-    creator: "Billy Markus, Jackson Palmer",
-    launchYear: 2013,
-    consensus: "Auxiliary Proof of Work (AuxPoW)",
-    supply: "143.4B DOGE",
-    description: "Dogecoin is an open-source peer-to-peer cryptocurrency. It is valued by its friendly community and was created as a lighthearted joke based on a popular meme."
-  }
+// Well-known details map for metadata not provided natively in simple API forms
+const WELL_KNOWN_METADATA: Record<string, { creator: string; consensus: string; launchYear?: number }> = {
+  bitcoin: { creator: "Satoshi Nakamoto", consensus: "Proof of Work (PoW)", launchYear: 2009 },
+  ethereum: { creator: "Vitalik Buterin", consensus: "Proof of Stake (PoS)", launchYear: 2015 },
+  solana: { creator: "Anatoly Yakovenko", consensus: "Proof of History (PoH)", launchYear: 2020 },
+  chainlink: { creator: "Sergey Nazarov", consensus: "Oracle Network Consensus", launchYear: 2017 },
+  binancecoin: { creator: "Changpeng Zhao", consensus: "Proof of Staked Authority (PoSA)", launchYear: 2017 },
+  ripple: { creator: "Arthur Britto, Jed McCaleb", consensus: "Ripple Protocol Consensus", launchYear: 2012 },
+  cardano: { creator: "Charles Hoskinson", consensus: "Ouroboros (PoS)", launchYear: 2017 },
+  dogecoin: { creator: "Billy Markus, Jackson Palmer", consensus: "Auxiliary Proof of Work (AuxPoW)", launchYear: 2013 }
 };
 
-const MOCK_TRENDING_ITEMS = [
-  { id: "bitcoin", name: "Bitcoin", symbol: "BTC", price: "$64,210.50", change: 2.45, thumb: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png" },
-  { id: "ethereum", name: "Ethereum", symbol: "ETH", price: "$3,452.12", change: 1.82, thumb: "https://assets.coingecko.com/coins/images/279/large/ethereum.png" },
-  { id: "solana", name: "Solana", symbol: "SOL", price: "$142.85", change: -0.92, thumb: "https://assets.coingecko.com/coins/images/4128/large/solana.png" },
-  { id: "chainlink", name: "Chainlink", symbol: "LINK", price: "$18.42", change: 5.10, thumb: "https://assets.coingecko.com/coins/images/877/large/chainlink.png" }
-];
+// Caching constants
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache TTL
 
-// Helper to generate mock chart points with realistic density
-function generateMockPoints(basePrice: number, days: number, volatility = 0.02): { chart: MarketChartPoint[], ohlc: OhlcData } {
-  let pointsCount = days;
-  let interval = 86400000; // default 1 day in ms
-
-  if (days === 1) {
-    pointsCount = 24; // 24 hours
-    interval = 3600000; // 1 hour
-  } else if (days === 5) {
-    pointsCount = 40; // 5 days, 8 candles per day
-    interval = 10800000; // 3 hours
-  } else if (days === 30) {
-    pointsCount = 60; // 30 days, 2 candles per day
-    interval = 43200000; // 12 hours
-  } else if (days === 90) {
-    pointsCount = 90; // 90 days, daily
-    interval = 86400000; // 1 day
-  } else if (days === 180) {
-    pointsCount = 180;
-    interval = 86400000;
-  } else if (days === 365) {
-    pointsCount = 365;
-    interval = 86400000;
-  } else if (days >= 1825) {
-    pointsCount = 300;
-    interval = 604800000; // 7 days (weekly)
-  }
-
-  const chart: MarketChartPoint[] = [];
-  const now = Date.now();
-  let currentPrice = basePrice;
-
-  let min = basePrice;
-  let max = basePrice;
-
-  for (let i = pointsCount; i >= 0; i--) {
-    const time = now - i * interval;
-    const change = currentPrice * volatility * (Math.random() - 0.48); // Slight upward bias
-    currentPrice += change;
-    chart.push({ time, price: Number(currentPrice.toFixed(2)) });
-    
-    if (currentPrice < min) min = currentPrice;
-    if (currentPrice > max) max = currentPrice;
-  }
-
-  const open = chart[0]?.price || basePrice;
-  const close = chart[chart.length - 1]?.price || basePrice;
-
-  return {
-    chart,
-    ohlc: {
-      time: now,
-      open: Number(open.toFixed(2)),
-      high: Number(max.toFixed(2)),
-      low: Number(min.toFixed(2)),
-      close: Number(close.toFixed(2))
-    }
-  };
-}
-
-export async function fetchTrendingCoins(): Promise<TrendingCoin[]> {
-  try {
-    const response = await fetch("https://api.coingecko.com/api/v3/search/trending");
-    if (!response.ok) throw new Error("Rate limit or API error");
-    const data = await response.json();
-    return data.coins;
-  } catch (error) {
-    console.warn("CoinGecko API error, falling back to mock trending data", error);
-    return MOCK_TRENDING_ITEMS.map((item, index) => ({
-      item: {
-        id: item.id,
-        coin_id: index + 100,
-        name: item.name,
-        symbol: item.symbol,
-        market_cap_rank: index + 1,
-        thumb: item.thumb,
-        small: item.thumb,
-        large: item.thumb,
-        price_btc: 1,
-        data: {
-          price: item.price,
-          price_btc: "1.0",
-          price_change_percentage_24h: {
-            usd: item.change
-          },
-          sparkline: ""
-        }
-      }
-    }));
-  }
-}
-
-export async function searchCoins(query: string): Promise<SearchResult[]> {
-  if (!query.trim()) return [];
-  try {
-    const response = await fetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`);
-    if (!response.ok) throw new Error("Rate limit or API error");
-    const data = await response.json();
-    return data.coins.slice(0, 10);
-  } catch (error) {
-    console.warn("CoinGecko API error, using mock fuzzy search", error);
-    const lowerQuery = query.toLowerCase();
-    return Object.entries(MOCK_COINS)
-      .filter(([id, data]) => id.includes(lowerQuery) || data.name.toLowerCase().includes(lowerQuery) || data.symbol.toLowerCase().includes(lowerQuery))
-      .map(([id, data]) => ({
-        id,
-        name: data.name,
-        symbol: data.symbol,
-        market_cap_rank: 1,
-        thumb: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png"
-      }));
-  }
-}
-
-export async function fetchCoinData(id: string, days: number): Promise<{
+interface CoinDataResult {
   chartData: MarketChartPoint[];
   ohlc: OhlcData;
   coinDetails: {
@@ -307,82 +81,126 @@ export async function fetchCoinData(id: string, days: number): Promise<{
     supply: string;
     description: string;
   };
-}> {
+}
+
+const coinDataCache: Record<string, { timestamp: number; data: CoinDataResult }> = {};
+let cachedTrending: { timestamp: number; data: TrendingCoin[] } | null = null;
+
+export async function fetchTrendingCoins(): Promise<TrendingCoin[]> {
+  const now = Date.now();
+  if (cachedTrending && now - cachedTrending.timestamp < CACHE_TTL_MS) {
+    return cachedTrending.data;
+  }
+
+  const response = await fetch("https://api.coingecko.com/api/v3/search/trending");
+  if (!response.ok) {
+    throw new Error(`CoinGecko Trending API error: ${response.status} ${response.statusText}`);
+  }
+  const data = await response.json();
+  cachedTrending = {
+    timestamp: now,
+    data: data.coins
+  };
+  return data.coins;
+}
+
+export async function searchCoins(query: string): Promise<SearchResult[]> {
+  if (!query.trim()) return [];
+  const response = await fetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`);
+  if (!response.ok) {
+    throw new Error(`CoinGecko Search API error: ${response.status} ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data.coins.slice(0, 10);
+}
+
+function formatLargeNumber(num: number): string {
+  if (!num) return "N/A";
+  if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
+  if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+  if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+  return `$${num.toLocaleString()}`;
+}
+
+function formatSupply(num: number, symbol: string): string {
+  if (!num) return "N/A";
+  if (num >= 1e9) return `${(num / 1e9).toFixed(2)}B ${symbol.toUpperCase()}`;
+  if (num >= 1e6) return `${(num / 1e6).toFixed(2)}M ${symbol.toUpperCase()}`;
+  return `${num.toLocaleString()} ${symbol.toUpperCase()}`;
+}
+
+export async function fetchCoinData(id: string, days: number | string): Promise<CoinDataResult> {
   const coinId = id.toLowerCase();
-  const mockInfo = MOCK_COINS[coinId] || {
-    name: coinId.charAt(0).toUpperCase() + coinId.slice(1),
-    symbol: coinId.toUpperCase().slice(0, 4),
-    price: 100,
-    change24h: 0,
-    cap: "$10M",
-    volume: "$1M",
-    creator: "Unknown",
-    launchYear: 2020,
-    consensus: "N/A",
-    supply: "N/A",
-    description: "No description available for this mock token."
+  const cacheKey = `${coinId}_${days}`;
+  const now = Date.now();
+
+  if (coinDataCache[cacheKey] && now - coinDataCache[cacheKey].timestamp < CACHE_TTL_MS) {
+    return coinDataCache[cacheKey].data;
+  }
+
+  // 1. Fetch metadata and details from coins/{id}
+  const coinRes = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`);
+  if (!coinRes.ok) {
+    throw new Error(`CoinGecko Coin Details API error: ${coinRes.status} ${coinRes.statusText}`);
+  }
+  const coinData = await coinRes.json();
+
+  // 2. Fetch chart history
+  const chartRes = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
+  if (!chartRes.ok) {
+    throw new Error(`CoinGecko Chart API error: ${chartRes.status} ${chartRes.statusText}`);
+  }
+  const chartDataJson = await chartRes.json();
+
+  // Map prices to chart points
+  const chartData: MarketChartPoint[] = chartDataJson.prices.map(([time, price]: [number, number]) => ({
+    time,
+    price: Number(price.toFixed(2))
+  }));
+
+  // Compute OHLC from chart data
+  const prices = chartData.map(p => p.price);
+  const ohlc: OhlcData = {
+    time: Date.now(),
+    open: chartData[0]?.price || 0,
+    high: Math.max(...prices),
+    low: Math.min(...prices),
+    close: chartData[chartData.length - 1]?.price || 0
   };
 
-  try {
-    // Attempt fetching live chart
-    const chartRes = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
-    if (!chartRes.ok) throw new Error("Rate limit or API error");
-    const chartDataJson = await chartRes.json();
-    
-    const chartData: MarketChartPoint[] = chartDataJson.prices.map(([time, price]: [number, number]) => ({
-      time,
-      price: Number(price.toFixed(2))
-    }));
+  // Determine metadata values
+  const known = WELL_KNOWN_METADATA[coinId] || { creator: "N/A", consensus: "N/A" };
+  const genesisDate = coinData.genesis_date;
+  const launchYear = known.launchYear || (genesisDate ? new Date(genesisDate).getFullYear() : 2020);
 
-    // Fetch simple price to get latest info
-    const priceRes = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`);
-    let details = {
-      ...mockInfo,
-      marketCap: mockInfo.cap
-    };
+  // Strip html from description
+  const cleanDescription = (coinData.description?.en || "No description available.")
+    .replace(/<[^>]*>/g, "");
 
-    if (priceRes.ok) {
-      const priceJson = await priceRes.json();
-      const coinPriceInfo = priceJson[coinId];
-      if (coinPriceInfo) {
-        details = {
-          ...mockInfo,
-          price: coinPriceInfo.usd,
-          change24h: coinPriceInfo.usd_24h_change || 0,
-          marketCap: coinPriceInfo.usd_market_cap ? `$${(coinPriceInfo.usd_market_cap / 1e9).toFixed(1)}B` : mockInfo.cap,
-          volume: coinPriceInfo.usd_24h_vol ? `$${(coinPriceInfo.usd_24h_vol / 1e9).toFixed(1)}B` : mockInfo.volume
-        };
-      }
-    }
+  const coinDetails = {
+    name: coinData.name,
+    symbol: coinData.symbol.toUpperCase(),
+    price: coinData.market_data?.current_price?.usd || 0,
+    change24h: coinData.market_data?.price_change_percentage_24h || 0,
+    marketCap: formatLargeNumber(coinData.market_data?.market_cap?.usd),
+    volume: formatLargeNumber(coinData.market_data?.total_volume?.usd),
+    creator: known.creator,
+    launchYear: launchYear,
+    consensus: known.consensus,
+    supply: formatSupply(coinData.market_data?.circulating_supply, coinData.symbol),
+    description: cleanDescription
+  };
 
-    // Compute OHLC from the chart data
-    const prices = chartData.map(p => p.price);
-    const ohlc: OhlcData = {
-      time: Date.now(),
-      open: chartData[0]?.price || 0,
-      high: Math.max(...prices),
-      low: Math.min(...prices),
-      close: chartData[chartData.length - 1]?.price || 0
-    };
+  const result = {
+    chartData,
+    ohlc,
+    coinDetails
+  };
 
-    return {
-      chartData,
-      ohlc,
-      coinDetails: details
-    };
-  } catch (error) {
-    console.warn(`CoinGecko chart fetch failed for ${id}, generating realistic mock data`, error);
-    const mock = generateMockPoints(mockInfo.price, days, mockInfo.change24h !== 0 ? Math.abs(mockInfo.change24h) / 100 : 0.02);
-    return {
-      chartData: mock.chart,
-      ohlc: mock.ohlc,
-      coinDetails: {
-        ...mockInfo,
-        price: mock.ohlc.close,
-        change24h: mockInfo.change24h,
-        marketCap: mockInfo.cap,
-        volume: mockInfo.volume
-      }
-    };
-  }
+  coinDataCache[cacheKey] = {
+    timestamp: now,
+    data: result
+  };
+
+  return result;
 }

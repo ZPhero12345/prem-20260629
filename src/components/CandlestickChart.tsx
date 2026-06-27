@@ -1,17 +1,21 @@
 import React, { useRef, useMemo } from "react";
-import { theme, Button } from "antd";
+import { theme, Button, Spin } from "antd";
 import type { MarketChartPoint } from "../utils/api";
 
 interface CandlestickChartProps {
   chartData: MarketChartPoint[];
-  selectedRange: number;
-  onRangeChange: (range: number) => void;
+  selectedRange: number | string;
+  onRangeChange: (range: number | string) => void;
+  isFetching: boolean;
+  hasData: boolean;
 }
 
 export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
   chartData,
   selectedRange,
-  onRangeChange
+  onRangeChange,
+  isFetching,
+  hasData
 }) => {
   const { token } = theme.useToken();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,9 +35,29 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
   const candlestickData = useMemo(() => {
     if (!chartData || chartData.length < 2) return [];
     
-    // Cap visible candles around 45 to optimize SVG node count
-    const chunkCount = 45;
-    const chunkSize = Math.max(1, Math.floor(chartData.length / chunkCount));
+    let chunkSize = 1;
+    if (selectedRange === 1) {
+      chunkSize = 6; // 30 min candles (5 min points)
+    } else if (selectedRange === 5) {
+      chunkSize = 4; // 4 hour candles (1 hr points)
+    } else if (selectedRange === 30) {
+      chunkSize = 24; // 24 hour (1 day) candles (1 hr points)
+    } else if (selectedRange === 90) {
+      chunkSize = 3; // 3-day candles (1 day points)
+    } else if (selectedRange === 180) {
+      chunkSize = 5; // 5-day candles (1 day points)
+    } else if (selectedRange === 365) {
+      chunkSize = 7; // 7-day (weekly) candles (1 day points)
+    } else if (selectedRange === "max") {
+      chunkSize = Math.max(14, Math.floor(chartData.length / 45)); // Bi-weekly/Monthly candles (1 day points)
+    }
+
+    // Ensure we don't end up with too few candles
+    const calculatedCandlesCount = Math.floor(chartData.length / chunkSize);
+    if (calculatedCandlesCount < 8) {
+      chunkSize = Math.max(1, Math.floor(chartData.length / 45));
+    }
+
     const candles = [];
 
     for (let i = 0; i < chartData.length; i += chunkSize) {
@@ -68,7 +92,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
       });
     }
     return candles;
-  }, [chartData]);
+  }, [chartData, selectedRange]);
 
   // Chart Sizing Parameters
   const width = 740;
@@ -179,7 +203,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
     { label: "3M", value: 90 },
     { label: "6M", value: 180 },
     { label: "1Y", value: 365 },
-    { label: "All", value: 3000 },
+    { label: "All", value: "max" },
   ];
 
   const latestCandle = candlestickData[candlestickData.length - 1] || { open: 0, high: 0, low: 0, close: 0 };
@@ -199,6 +223,27 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
 
       {/* SVG Canvas Workspace */}
       <div style={{ height: 400, position: "relative" }}>
+        {(isFetching || !hasData) && (
+          <div style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(19, 19, 19, 0.65)",
+            backdropFilter: "blur(2px)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10,
+            borderRadius: 8,
+            gap: 12,
+            padding: 16
+          }}>
+            <Spin size="default" tip="Loading asset statistics..." />
+          </div>
+        )}
         {candlestickData.length > 0 ? (
           <svg
             width="100%"
@@ -306,7 +351,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
               const dateObj = new Date(candle.time);
               const labelText = selectedRange === 1
                 ? dateObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
-                : selectedRange >= 365
+                : (selectedRange === "max" || (typeof selectedRange === "number" && selectedRange >= 365))
                   ? dateObj.toLocaleDateString("en-US", { month: "short", year: "numeric" })
                   : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 

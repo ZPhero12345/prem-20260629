@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Typography, Button, Card, Col, Row, Statistic, theme, Spin, Tooltip as AntTooltip } from "antd";
+import { Typography, Button, Card, Col, Row, Statistic, theme, Tooltip as AntTooltip } from "antd";
 import {
   SettingOutlined,
   FullscreenOutlined,
@@ -23,28 +23,37 @@ export const CryptoDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { token } = theme.useToken();
 
-  const [selectedRange, setSelectedRange] = useState(7);
+  const [selectedRange, setSelectedRange] = useState<number | string>(7);
   const [starred, setStarred] = useState(false);
 
   const coinId = id || "bitcoin";
 
   // Fetch chart and OHLC data inside the detail page
-  const { data: assetData, isLoading: loading } = useQuery({
+  const { data: assetData, isFetching } = useQuery({
     queryKey: ["coinData", coinId, selectedRange],
     queryFn: () => fetchCoinData(coinId, selectedRange),
     placeholderData: keepPreviousData,
     staleTime: 30000,
+    retry: true,
+    retryDelay: (attempt) => Math.min(attempt * 5000, 30000),
   });
 
-  if (loading || !assetData) {
-    return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
-        <Spin size="large" tip="Loading crypto statistics..." />
-      </div>
-    );
-  }
+  const coinDetails = assetData?.coinDetails || {
+    name: coinId.charAt(0).toUpperCase() + coinId.slice(1),
+    symbol: coinId.slice(0, 4).toUpperCase(),
+    price: 0,
+    change24h: 0,
+    marketCap: "-",
+    volume: "-",
+    creator: "-",
+    launchYear: 0,
+    consensus: "-",
+    supply: "-",
+    description: "Fetching coin details from CoinGecko..."
+  };
 
-  const { coinDetails, ohlc } = assetData;
+  const ohlc = assetData?.ohlc || null;
+  const chartData = assetData?.chartData || [];
 
   // Sidebar watchlists
   const watchlist = [
@@ -99,14 +108,17 @@ export const CryptoDetailPage: React.FC = () => {
               background: token.colorBgContainer,
               border: `1px solid ${token.colorBorderSecondary}`,
               borderRadius: 8,
-              transition: "background 0.3s, border-color 0.3s"
+              transition: "background 0.3s, border-color 0.3s",
+              position: "relative"
             }}
             styles={{ body: { padding: "16px 20px" } }}
           >
             <CandlestickChart
-              chartData={assetData.chartData}
+              chartData={chartData}
               selectedRange={selectedRange}
               onRangeChange={setSelectedRange}
+              isFetching={isFetching}
+              hasData={!!assetData}
             />
           </Card>
         </Col>

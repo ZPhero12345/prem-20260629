@@ -8,7 +8,7 @@ import { MainTrendPage } from "./components/MainTrendPage";
 import { CryptoDetailPage } from "./components/CryptoDetailPage";
 import { fetchTrendingCoins, fetchCoinData } from "./utils/api";
 import type { TrendingCoin, MarketChartPoint, OhlcData } from "./utils/api";
-import { Row, Col, Card, Typography, ConfigProvider, theme } from "antd";
+import { Row, Col, Card, Typography, ConfigProvider, theme, Alert } from "antd";
 import { ArrowUpOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -38,18 +38,20 @@ function MainAppContent() {
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Fetch trending coins
-  const { data: trendingCoins = [], isLoading: trendingLoading } = useQuery<TrendingCoin[]>({
+  const { data: trendingCoins = [], isLoading: trendingLoading, isError: trendingError } = useQuery<TrendingCoin[]>({
     queryKey: ["trendingCoins"],
     queryFn: fetchTrendingCoins,
     staleTime: 60000,
+    retry: 1,
   });
 
   // Fetch default bitcoin chart for the main page trend chart
-  const { data: assetData, isLoading: assetLoading } = useQuery<AssetDataPayload>({
+  const { data: assetData, isLoading: assetLoading, isError: assetError, error: apiError } = useQuery<AssetDataPayload>({
     queryKey: ["coinData", "bitcoin", selectedRange],
     queryFn: () => fetchCoinData("bitcoin", selectedRange),
     placeholderData: keepPreviousData,
     staleTime: 30000,
+    retry: 1,
   });
 
   const coinDetails = assetData?.coinDetails || {
@@ -108,6 +110,15 @@ function MainAppContent() {
         <Routes>
           <Route path="/" element={
             <>
+              {(assetError || trendingError) && (
+                <Alert
+                  message="API Rate Limit Reached"
+                  description={apiError instanceof Error ? apiError.message : "The public CoinGecko API has rate-limited requests. Showing static fallback values. Please try again in a few moments."}
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: 24 }}
+                />
+              )}
               {/* Top Header section */}
               <Row gutter={[24, 24]} align="middle" style={{ marginBottom: 24 }}>
                 <Col xs={24} lg={16}>
