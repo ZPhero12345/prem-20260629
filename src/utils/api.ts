@@ -120,14 +120,49 @@ export async function fetchTrendingCoins(): Promise<TrendingCoin[]> {
   return data.coins;
 }
 
+const searchQueryCache: Record<string, { timestamp: number; data: SearchResult[] }> = {};
+
 export async function searchCoins(query: string): Promise<SearchResult[]> {
-  if (!query.trim()) return [];
+  const trimmed = query.trim().toLowerCase();
+  if (!trimmed) return [];
+
+  const now = Date.now();
+  if (searchQueryCache[trimmed] && now - searchQueryCache[trimmed].timestamp < CACHE_TTL_MS) {
+    return searchQueryCache[trimmed].data;
+  }
+
   const response = await fetchFromApi(`/search?query=${encodeURIComponent(query)}`);
   if (!response.ok) {
     throw new Error(`CoinGecko Search API error: ${response.status} ${response.statusText}`);
   }
   const data = await response.json();
-  return data.coins.slice(0, 10);
+  const results: SearchResult[] = data.coins || [];
+
+  // Sort exact matches on symbol or name to the top of suggestions
+  results.sort((a, b) => {
+    const aSym = a.symbol.toLowerCase();
+    const bSym = b.symbol.toLowerCase();
+    const aName = a.name.toLowerCase();
+    const bName = b.name.toLowerCase();
+
+    // 1. Exact symbol match
+    if (aSym === trimmed && bSym !== trimmed) return -1;
+    if (bSym === trimmed && aSym !== trimmed) return 1;
+
+    // 2. Exact name match
+    if (aName === trimmed && bName !== trimmed) return -1;
+    if (bName === trimmed && aName !== trimmed) return 1;
+
+    return 0;
+  });
+
+  const slicedResults = results.slice(0, 10);
+  searchQueryCache[trimmed] = {
+    timestamp: now,
+    data: slicedResults
+  };
+
+  return slicedResults;
 }
 
 function formatLargeNumber(num: number): string {

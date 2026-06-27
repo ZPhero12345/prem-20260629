@@ -23,7 +23,7 @@ export const CryptoDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { token } = theme.useToken();
 
-  const [selectedRange, setSelectedRange] = useState(7);
+  const [selectedRange, setSelectedRange] = useState(1);
   const [starred, setStarred] = useState(false);
 
   const coinId = id || "bitcoin";

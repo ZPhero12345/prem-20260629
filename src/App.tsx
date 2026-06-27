@@ -125,6 +125,7 @@ function MainAppContent() {
                   <SearchBar 
                     onSelectAsset={(id) => navigate(`/coin/${id}`)} 
                     onFocusStateChange={setIsSearchFocused} 
+                    trendingCoins={trendingCoins}
                   />
                 </Col>
                 
