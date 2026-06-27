@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Typography, Button, Card, Col, Row, Statistic, theme, Tooltip as AntTooltip } from "antd";
 import {
   SettingOutlined,
@@ -6,8 +6,6 @@ import {
   CameraOutlined,
   UndoOutlined,
   RedoOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
   StarOutlined,
   StarFilled
 } from "@ant-design/icons";
@@ -15,6 +13,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchCoinData } from "../utils/api";
 import { CandlestickChart } from "./CandlestickChart";
+
+import type { UTCTimestamp } from "lightweight-charts";
 
 const { Title } = Typography;
 
@@ -52,8 +52,62 @@ export const CryptoDetailPage: React.FC = () => {
     description: "Fetching coin details from CoinGecko..."
   };
 
-  const ohlc = assetData?.ohlc || null;
-  const chartData = assetData?.chartData || [];
+  const ohlcData = assetData?.ohlcData || [];
+
+  // Chunk native OHLC candle arrays to target exactly 80 to 150 candles
+  const candlestickData = useMemo(() => {
+    if (!ohlcData || ohlcData.length < 2) return [];
+
+    const targetCandles = 100;
+    const chunkSize = Math.max(1, Math.round(ohlcData.length / targetCandles));
+
+    const candles = [];
+    for (let i = 0; i + chunkSize <= ohlcData.length; i += chunkSize) {
+      const slice = ohlcData.slice(i, i + chunkSize);
+      if (slice.length === 0) continue;
+
+      const open = slice[0][1]; // Open of first candle in slice
+      const close = slice[slice.length - 1][4]; // Close of last candle in slice
+      const highs = slice.map(s => s[2]);
+      const lows = slice.map(s => s[3]);
+      const high = Math.max(...highs);
+      const low = Math.min(...lows);
+      const time = Math.floor(slice[Math.floor(slice.length / 2)][0] / 1000) as UTCTimestamp;
+
+      candles.push({
+        time,
+        open,
+        high,
+        low,
+        close
+      });
+    }
+
+    candles.sort((a, b) => a.time - b.time);
+    return candles.filter((item, index, self) =>
+      index === 0 || item.time > self[index - 1].time
+    );
+  }, [ohlcData]);
+
+
+
+  const openStatRef = useRef<HTMLSpanElement>(null);
+  const highStatRef = useRef<HTMLSpanElement>(null);
+  const lowStatRef = useRef<HTMLSpanElement>(null);
+  const closeStatRef = useRef<HTMLSpanElement>(null);
+
+  // Overall OHLC calculated from the chunked candlestick data
+  const overallOhlc = useMemo(() => {
+    if (candlestickData.length === 0) return null;
+    const highs = candlestickData.map((c: any) => c.high);
+    const lows = candlestickData.map((c: any) => c.low);
+    return {
+      open: candlestickData[0].open,
+      high: Math.max(...highs),
+      low: Math.min(...lows),
+      close: candlestickData[candlestickData.length - 1].close
+    };
+  }, [candlestickData]);
 
   // Sidebar watchlists
   const watchlist = [
@@ -63,17 +117,7 @@ export const CryptoDetailPage: React.FC = () => {
     { symbol: "LINK", last: "$18.42", change: "+5.10%", isDown: false },
   ];
 
-  const formatPriceVal = (val?: number) => {
-    if (val === undefined || val === null) return "$0.00";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: val < 1 ? 4 : 2,
-      maximumFractionDigits: val < 1 ? 4 : 2,
-    }).format(val);
-  };
 
-  const isPositive = ohlc ? (ohlc.close >= ohlc.open) : coinDetails.change24h >= 0;
 
   return (
     <div style={{ 
@@ -124,11 +168,16 @@ export const CryptoDetailPage: React.FC = () => {
           padding: "20px 24px"
         }}>
           <CandlestickChart
-            chartData={chartData}
+            candlestickData={candlestickData}
             selectedRange={selectedRange}
             onRangeChange={setSelectedRange}
             isFetching={isFetching}
             hasData={!!assetData}
+            openStatRef={openStatRef}
+            highStatRef={highStatRef}
+            lowStatRef={lowStatRef}
+            closeStatRef={closeStatRef}
+            overallOhlc={overallOhlc}
           />
         </div>
 
@@ -152,33 +201,28 @@ export const CryptoDetailPage: React.FC = () => {
           >
             <Row gutter={[12, 12]}>
               <Col span={12}>
-                <Statistic
-                  title={<span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase" }}>Open</span>}
-                  value={formatPriceVal(ohlc?.open)}
-                  valueStyle={{ color: token.colorText, fontSize: 16, fontWeight: 700 }}
-                />
+                <div>
+                  <span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase", display: "block", marginBottom: 4 }}>Open</span>
+                  <span ref={openStatRef} style={{ color: token.colorText, fontSize: 16, fontWeight: 700 }}>$0.00</span>
+                </div>
               </Col>
               <Col span={12}>
-                <Statistic
-                  title={<span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase" }}>High</span>}
-                  value={formatPriceVal(ohlc?.high)}
-                  valueStyle={{ color: token.colorSuccess, fontSize: 16, fontWeight: 700 }}
-                />
+                <div>
+                  <span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase", display: "block", marginBottom: 4 }}>High</span>
+                  <span ref={highStatRef} style={{ color: token.colorSuccess, fontSize: 16, fontWeight: 700 }}>$0.00</span>
+                </div>
               </Col>
               <Col span={12}>
-                <Statistic
-                  title={<span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase" }}>Low</span>}
-                  value={formatPriceVal(ohlc?.low)}
-                  valueStyle={{ color: token.colorError, fontSize: 16, fontWeight: 700 }}
-                />
+                <div>
+                  <span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase", display: "block", marginBottom: 4 }}>Low</span>
+                  <span ref={lowStatRef} style={{ color: token.colorError, fontSize: 16, fontWeight: 700 }}>$0.00</span>
+                </div>
               </Col>
               <Col span={12}>
-                <Statistic
-                  title={<span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase" }}>Close</span>}
-                  value={formatPriceVal(ohlc?.close)}
-                  valueStyle={{ color: isPositive ? token.colorSuccess : token.colorError, fontSize: 16, fontWeight: 700 }}
-                  prefix={isPositive ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                />
+                <div>
+                  <span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase", display: "block", marginBottom: 4 }}>Close</span>
+                  <span ref={closeStatRef} style={{ color: token.colorSuccess, fontSize: 16, fontWeight: 700 }}>$0.00</span>
+                </div>
               </Col>
               <Col span={12} style={{ marginTop: 8 }}>
                 <Statistic

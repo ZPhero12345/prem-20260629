@@ -68,6 +68,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache TTL
 interface CoinDataResult {
   chartData: MarketChartPoint[];
   ohlc: OhlcData;
+  ohlcData: [number, number, number, number, number][];
   coinDetails: {
     name: string;
     symbol: string;
@@ -196,27 +197,28 @@ export async function fetchCoinData(id: string, days: number): Promise<CoinDataR
   }
   const coinData = await coinRes.json();
 
-  // 2. Fetch chart history
-  const chartRes = await fetchFromApi(`/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
-  if (!chartRes.ok) {
-    throw new Error(`CoinGecko Chart API error: ${chartRes.status} ${chartRes.statusText}`);
+  // 2. Fetch official OHLC history (with 2 decimal precision)
+  const ohlcRes = await fetchFromApi(`/coins/${coinId}/ohlc?vs_currency=usd&days=${days}&precision=2`);
+  if (!ohlcRes.ok) {
+    throw new Error(`CoinGecko OHLC API error: ${ohlcRes.status} ${ohlcRes.statusText}`);
   }
-  const chartDataJson = await chartRes.json();
+  const ohlcData: [number, number, number, number, number][] = await ohlcRes.json();
 
-  // Map prices to chart points
-  const chartData: MarketChartPoint[] = chartDataJson.prices.map(([time, price]: [number, number]) => ({
+  // Map to chartData for backward compatibility (using close price as the point price)
+  const chartData: MarketChartPoint[] = ohlcData.map(([time, , , , close]) => ({
     time,
-    price: Number(price.toFixed(2))
+    price: close
   }));
 
-  // Compute OHLC from chart data
-  const prices = chartData.map(p => p.price);
+  // Calculate overall OHLC statistics from the native candles
+  const highs = ohlcData.map(d => d[2]);
+  const lows = ohlcData.map(d => d[3]);
   const ohlc: OhlcData = {
     time: Date.now(),
-    open: chartData[0]?.price || 0,
-    high: Math.max(...prices),
-    low: Math.min(...prices),
-    close: chartData[chartData.length - 1]?.price || 0
+    open: ohlcData[0]?.[1] || 0,
+    high: ohlcData.length > 0 ? Math.max(...highs) : 0,
+    low: ohlcData.length > 0 ? Math.min(...lows) : 0,
+    close: ohlcData[ohlcData.length - 1]?.[4] || 0
   };
 
   // Determine metadata values
@@ -245,6 +247,7 @@ export async function fetchCoinData(id: string, days: number): Promise<CoinDataR
   const result = {
     chartData,
     ohlc,
+    ohlcData,
     coinDetails
   };
 

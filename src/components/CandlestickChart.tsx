@@ -1,224 +1,229 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useEffect } from "react";
 import { theme, Button, Spin } from "antd";
-import type { MarketChartPoint } from "../utils/api";
+import { createChart, ColorType, CandlestickSeries, TickMarkType } from "lightweight-charts";
+import type { UTCTimestamp, Time } from "lightweight-charts";
 
 interface CandlestickChartProps {
-  chartData: MarketChartPoint[];
+  candlestickData: {
+    time: UTCTimestamp;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+  }[];
   selectedRange: number;
   onRangeChange: (range: number) => void;
   isFetching: boolean;
   hasData: boolean;
+  openStatRef: React.RefObject<HTMLSpanElement | null>;
+  highStatRef: React.RefObject<HTMLSpanElement | null>;
+  lowStatRef: React.RefObject<HTMLSpanElement | null>;
+  closeStatRef: React.RefObject<HTMLSpanElement | null>;
+  overallOhlc: {
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+  } | null;
 }
 
 export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
-  chartData,
+  candlestickData,
   selectedRange,
   onRangeChange,
   isFetching,
-  hasData
+  hasData,
+  openStatRef,
+  highStatRef,
+  lowStatRef,
+  closeStatRef,
+  overallOhlc
 }) => {
   const { token } = theme.useToken();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
 
-  // SVG Crosshair DOM Refs (direct manipulation for 60fps performance)
-  const xLineRef = useRef<SVGLineElement>(null);
-  const yLineRef = useRef<SVGLineElement>(null);
-  const hoverCircleRef = useRef<SVGCircleElement>(null);
-  
   // Header text DOM Refs to show active price metrics without React state updates
   const openValRef = useRef<HTMLSpanElement>(null);
   const highValRef = useRef<HTMLSpanElement>(null);
   const lowValRef = useRef<HTMLSpanElement>(null);
   const closeValRef = useRef<HTMLSpanElement>(null);
 
-  // Downsample/Chunk data into candles
-  const candlestickData = useMemo(() => {
-    if (!chartData || chartData.length < 2) return [];
+  useEffect(() => {
+    if (!chartContainerRef.current || candlestickData.length === 0) return;
+
+    const container = chartContainerRef.current;
     
-    let chunkSize = 1;
-    if (selectedRange === 1) {
-      chunkSize = 6; // 30 min candles (5 min points)
-    } else if (selectedRange === 5) {
-      chunkSize = 4; // 4 hour candles (1 hr points)
-    } else if (selectedRange === 30) {
-      chunkSize = 24; // 24 hour (1 day) candles (1 hr points)
-    } else if (selectedRange === 90) {
-      chunkSize = 3; // 3-day candles (1 day points)
-    } else if (selectedRange === 180) {
-      chunkSize = 5; // 5-day candles (1 day points)
-    } else if (selectedRange === 365) {
-      chunkSize = 7; // 7-day (weekly) candles (1 day points)
-    }
+    // Determine background / grid line colors based on the theme
+    const isDark = token.colorBgContainer === "#1c1b1b" || token.colorBgContainer.startsWith("#1");
+    const textColor = token.colorTextDescription;
+    const gridColor = isDark ? "#2a2a2a" : "#e8e8e8";
 
-    // Ensure we don't end up with too few candles
-    const calculatedCandlesCount = Math.floor(chartData.length / chunkSize);
-    if (calculatedCandlesCount < 8) {
-      chunkSize = Math.max(1, Math.floor(chartData.length / 45));
-    }
+    const chartOptions = {
+      layout: {
+        background: { type: ColorType.Solid, color: "transparent" },
+        textColor: textColor,
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+      },
+      localization: {
+        locale: 'en-US',
+      },
+      grid: {
+        vertLines: { color: gridColor, style: 2 }, // Dashed vertical lines
+        horzLines: { color: gridColor, style: 2 }, // Dashed horizontal lines
+      },
+      crosshair: {
+        mode: 0, // Normal crosshair tracking
+        vertLine: {
+          color: isDark ? "#555" : "#ccc",
+          labelBackgroundColor: "#1e1e1e",
+        },
+        horzLine: {
+          color: isDark ? "#555" : "#ccc",
+          labelBackgroundColor: "#1e1e1e",
+        },
+      },
+      rightPriceScale: {
+        borderColor: gridColor,
+      },
+      timeScale: {
+        borderColor: gridColor,
+        timeVisible: true,
+        secondsVisible: false,
+        fixLeftEdge: true,
+        fixRightEdge: true,
+        tickMarkFormatter: (time: Time, tickMarkType: TickMarkType, locale: string) => {
+          const date = new Date((time as number) * 1000);
+          // Format based on tick mark type (0: Year, 1: Month, 2: DayOfMonth, 3: Time, 4: TimeWithSeconds)
+          if (tickMarkType === TickMarkType.DayOfMonth) {
+            return date.toLocaleDateString(locale, { month: "short", day: "numeric" }); // e.g. "Jun 27"
+          }
+          if (tickMarkType === TickMarkType.Month) {
+            return date.toLocaleDateString(locale, { month: "short" }); // e.g. "Jun"
+          }
+          if (tickMarkType === TickMarkType.Year) {
+            return date.toLocaleDateString(locale, { year: "numeric" }); // e.g. "2026"
+          }
+          return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hour12: false });
+        }
+      },
+      width: container.clientWidth,
+      height: container.clientHeight || 350,
+    };
 
-    const candles = [];
+    const chart = createChart(container, chartOptions);
 
-    for (let i = 0; i < chartData.length; i += chunkSize) {
-      const slice = chartData.slice(i, i + chunkSize);
-      if (slice.length === 0) continue;
-      
-      let open = slice[0].price;
-      let close = slice[slice.length - 1].price;
-      const prices = slice.map(s => s.price);
-      let high = Math.max(...prices);
-      let low = Math.min(...prices);
-      const time = slice[Math.floor(slice.length / 2)].time;
-      const volume = Math.round(open * (Math.random() * 50 + 10));
+    const series = chart.addSeries(CandlestickSeries, {
+      upColor: token.colorSuccess,
+      downColor: token.colorError,
+      borderVisible: false,
+      wickUpColor: token.colorSuccess,
+      wickDownColor: token.colorError,
+    });
 
-      // Simulate a spread/wicks if the slice contains only 1 point (low density)
-      if (slice.length === 1) {
-        const prevPrice = i > 0 ? chartData[i - 1].price : slice[0].price;
-        open = prevPrice;
-        close = slice[0].price;
-        const spread = Math.abs(open - close) || (open * 0.0015);
-        high = Math.max(open, close) + spread * (0.3 + Math.random() * 0.7);
-        low = Math.min(open, close) - spread * (0.3 + Math.random() * 0.7);
-      }
+    series.setData(candlestickData);
+    chart.timeScale().fitContent();
 
-      candles.push({
-        time,
-        open,
-        high,
-        low,
-        close,
-        volume
-      });
-    }
-    return candles;
-  }, [chartData, selectedRange]);
-
-  // Chart Sizing Parameters
-  const width = 740;
-  const height = 400;
-  const paddingRight = 60;
-  const paddingBottom = 30;
-  const paddingTop = 20;
-
-  const plotWidth = width - paddingRight;
-  const plotHeight = height - paddingBottom - paddingTop;
-
-  const minPrice = useMemo(() => {
-    const prices = candlestickData.map(c => c.low);
-    if (prices.length === 0) return 0.01;
-    const min = Math.min(...prices);
-    return min > 0 ? min * 0.995 : 0.01;
-  }, [candlestickData]);
-
-  const maxPrice = useMemo(() => {
-    const prices = candlestickData.map(c => c.high);
-    if (prices.length === 0) return 1.0;
-    const max = Math.max(...prices);
-    return max > 0 ? max * 1.005 : 1.0;
-  }, [candlestickData]);
-
-  const priceRange = maxPrice - minPrice;
-  const maxVolume = useMemo(() => {
-    const vols = candlestickData.map(c => c.volume || 1);
-    if (vols.length === 0) return 1;
-    return Math.max(...vols);
-  }, [candlestickData]);
-
-  const getX = (index: number) => {
-    if (candlestickData.length <= 1) return plotWidth / 2;
-    return (index / (candlestickData.length - 1)) * (plotWidth - 40) + 20;
-  };
-
-  const getY = (price: number) => {
-    return plotHeight - ((price - minPrice) / priceRange) * plotHeight + paddingTop;
-  };
-
-  const getVolumeHeight = (volume: number) => {
-    return (volume / maxVolume) * (plotHeight * 0.15);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
-    if (!containerRef.current || candlestickData.length === 0) return;
-    const rect = e.currentTarget.getBoundingClientRect();
+    // Set initial header values to the latest candle
+    const latestCandle = candlestickData[candlestickData.length - 1];
+    const formatCurrency = (val: number) => `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     
-    // Scale coordinates since SVG viewBox is used
-    const mouseX = ((e.clientX - rect.left) / rect.width) * width;
-    const mouseY = ((e.clientY - rect.top) / rect.height) * height;
+    const updateChartHeader = (open: number, high: number, low: number, close: number) => {
+      if (openValRef.current) openValRef.current.textContent = formatCurrency(open);
+      if (highValRef.current) highValRef.current.textContent = formatCurrency(high);
+      if (lowValRef.current) lowValRef.current.textContent = formatCurrency(low);
+      if (closeValRef.current) closeValRef.current.textContent = formatCurrency(close);
 
-    // Find closest candle index
-    let closestIndex = 0;
-    let closestDist = Infinity;
-    for (let i = 0; i < candlestickData.length; i++) {
-      const cx = getX(i);
-      const dist = Math.abs(cx - mouseX);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closestIndex = i;
-      }
+      const isGreen = close >= open;
+      if (closeValRef.current) closeValRef.current.style.color = isGreen ? token.colorSuccess : token.colorError;
+    };
+
+    const updateStatsCard = (open: number, high: number, low: number, close: number) => {
+      if (openStatRef.current) openStatRef.current.textContent = formatCurrency(open);
+      if (highStatRef.current) highStatRef.current.textContent = formatCurrency(high);
+      if (lowStatRef.current) lowStatRef.current.textContent = formatCurrency(low);
+      if (closeStatRef.current) closeStatRef.current.textContent = formatCurrency(close);
+
+      const isGreen = close >= open;
+      if (closeStatRef.current) closeStatRef.current.style.color = isGreen ? token.colorSuccess : token.colorError;
+    };
+
+    const defaultStats = overallOhlc || latestCandle;
+
+    if (latestCandle) {
+      updateChartHeader(latestCandle.open, latestCandle.high, latestCandle.low, latestCandle.close);
+    }
+    if (defaultStats) {
+      updateStatsCard(defaultStats.open, defaultStats.high, defaultStats.low, defaultStats.close);
     }
 
-    const candle = candlestickData[closestIndex];
-    if (candle && mouseX <= plotWidth && mouseY <= height - paddingBottom) {
-      const cx = getX(closestIndex);
-
-      // Direct DOM mutation for lines & circle
-      if (xLineRef.current) {
-        xLineRef.current.setAttribute("x1", cx.toString());
-        xLineRef.current.setAttribute("x2", cx.toString());
-        xLineRef.current.setAttribute("display", "block");
+    // Subscribe to crosshair move events to update the DOM metric panel instantly
+    chart.subscribeCrosshairMove((param) => {
+      if (
+        param.point === undefined ||
+        !param.time ||
+        param.point.x < 0 ||
+        param.point.x > container.clientWidth ||
+        param.point.y < 0 ||
+        param.point.y > container.clientHeight
+      ) {
+        // Reset to default unhovered values
+        if (latestCandle) {
+          updateChartHeader(latestCandle.open, latestCandle.high, latestCandle.low, latestCandle.close);
+        }
+        if (defaultStats) {
+          updateStatsCard(defaultStats.open, defaultStats.high, defaultStats.low, defaultStats.close);
+        }
+      } else {
+        const data = param.seriesData.get(series);
+        if (data) {
+          const ohlcData = data as { open: number; high: number; low: number; close: number };
+          updateChartHeader(ohlcData.open, ohlcData.high, ohlcData.low, ohlcData.close);
+          updateStatsCard(ohlcData.open, ohlcData.high, ohlcData.low, ohlcData.close);
+        }
       }
-      if (yLineRef.current) {
-        yLineRef.current.setAttribute("y1", mouseY.toString());
-        yLineRef.current.setAttribute("y2", mouseY.toString());
-        yLineRef.current.setAttribute("display", "block");
-      }
-      if (hoverCircleRef.current) {
-        hoverCircleRef.current.setAttribute("cx", cx.toString());
-        hoverCircleRef.current.setAttribute("cy", mouseY.toString());
-        hoverCircleRef.current.setAttribute("display", "block");
-      }
+    });
 
-      // Direct text updates to avoid triggering react renders on every hover pixel
-      const formatCurrency = (val: number) => `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      if (openValRef.current) openValRef.current.textContent = formatCurrency(candle.open);
-      if (highValRef.current) highValRef.current.textContent = formatCurrency(candle.high);
-      if (lowValRef.current) lowValRef.current.textContent = formatCurrency(candle.low);
-      if (closeValRef.current) closeValRef.current.textContent = formatCurrency(candle.close);
-    } else {
-      handleMouseLeave();
-    }
-  };
+    // Make the chart responsive using ResizeObserver
+    const handleResize = () => {
+      if (container) {
+        chart.applyOptions({
+          width: container.clientWidth,
+          height: container.clientHeight,
+        });
+      }
+    };
 
-  const handleMouseLeave = () => {
-    if (xLineRef.current) xLineRef.current.setAttribute("display", "none");
-    if (yLineRef.current) yLineRef.current.setAttribute("display", "none");
-    if (hoverCircleRef.current) hoverCircleRef.current.setAttribute("display", "none");
-  };
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+      chart.remove();
+    };
+  }, [candlestickData, token]);
 
   const ranges = [
     { label: "1D", value: 1 },
-    { label: "5D", value: 5 },
+    { label: "7D", value: 7 },
     { label: "1M", value: 30 },
     { label: "3M", value: 90 },
     { label: "6M", value: 180 },
     { label: "1Y", value: 365 },
   ];
 
-  const latestCandle = candlestickData[candlestickData.length - 1] || { open: 0, high: 0, low: 0, close: 0 };
-  const formatDefaultCurrency = (val: number) => `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
   return (
-    <div ref={containerRef} style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
       {/* Header Stats Panel */}
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", gap: 12, fontSize: 13, color: token.colorTextDescription }}>
-          <span>O: <span ref={openValRef} style={{ color: token.colorSuccess, fontWeight: 600 }}>{formatDefaultCurrency(latestCandle.open)}</span></span>
-          <span>H: <span ref={highValRef} style={{ color: token.colorSuccess, fontWeight: 600 }}>{formatDefaultCurrency(latestCandle.high)}</span></span>
-          <span>L: <span ref={lowValRef} style={{ color: token.colorError, fontWeight: 600 }}>{formatDefaultCurrency(latestCandle.low)}</span></span>
-          <span>C: <span ref={closeValRef} style={{ color: latestCandle.close >= latestCandle.open ? token.colorSuccess : token.colorError, fontWeight: 600 }}>{formatDefaultCurrency(latestCandle.close)}</span></span>
+          <span>O: <span ref={openValRef} style={{ color: token.colorSuccess, fontWeight: 600 }}>$0.00</span></span>
+          <span>H: <span ref={highValRef} style={{ color: token.colorSuccess, fontWeight: 600 }}>$0.00</span></span>
+          <span>L: <span ref={lowValRef} style={{ color: token.colorError, fontWeight: 600 }}>$0.00</span></span>
+          <span>C: <span ref={closeValRef} style={{ color: token.colorSuccess, fontWeight: 600 }}>$0.00</span></span>
         </div>
       </div>
 
-      {/* SVG Canvas Workspace */}
+      {/* lightweight-charts Rendering Container */}
       <div style={{ flex: 1, position: "relative", minHeight: 0 }}>
         {(isFetching || !hasData) && (
           <div style={{
@@ -241,166 +246,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = React.memo(({
             <Spin size="default" tip="Loading asset statistics..." />
           </div>
         )}
-        {candlestickData.length > 0 ? (
-          <svg
-            width="100%"
-            height="100%"
-            viewBox={`0 0 ${width} ${height}`}
-            preserveAspectRatio="none"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            style={{ display: "block" }}
-          >
-            {/* Grid lines */}
-            {Array.from({ length: 5 }).map((_, i) => {
-              const y = paddingTop + (i / 4) * plotHeight;
-              return (
-                <line
-                  key={`detail-grid-y-${i}`}
-                  x1={0}
-                  y1={y}
-                  x2={plotWidth}
-                  y2={y}
-                  stroke={token.colorBorder}
-                  strokeDasharray="3 3"
-                />
-              );
-            })}
-            {Array.from({ length: 8 }).map((_, i) => {
-              const x = (i / 7) * plotWidth;
-              return (
-                <line
-                  key={`detail-grid-x-${i}`}
-                  x1={x}
-                  y1={0}
-                  x2={x}
-                  y2={height - paddingBottom}
-                  stroke={token.colorBorder}
-                  strokeDasharray="3 3"
-                />
-              );
-            })}
-
-            {/* Volumes */}
-            {candlestickData.map((candle, idx) => {
-              const cx = getX(idx);
-              const cy = height - paddingBottom;
-              const vHeight = getVolumeHeight(candle.volume);
-              const isGreen = candle.close >= candle.open;
-              return (
-                <rect
-                  key={`detail-vol-${idx}`}
-                  x={cx - 3}
-                  y={cy - vHeight}
-                  width={6}
-                  height={vHeight}
-                  fill={isGreen ? "rgba(109,224,57,0.15)" : "rgba(255,180,171,0.15)"}
-                />
-              );
-            })}
-
-            {/* Candlesticks */}
-            {candlestickData.map((candle, idx) => {
-              const cx = getX(idx);
-              const yOpen = getY(candle.open);
-              const yClose = getY(candle.close);
-              const yHigh = getY(candle.high);
-              const yLow = getY(candle.low);
-              const isGreen = candle.close >= candle.open;
-              const color = isGreen ? token.colorSuccess : token.colorError;
-
-              return (
-                <g key={`detail-candle-${idx}`}>
-                  <line x1={cx} y1={yHigh} x2={cx} y2={yLow} stroke={color} strokeWidth={1.5} />
-                  <rect
-                    x={cx - 4}
-                    y={Math.min(yOpen, yClose)}
-                    width={8}
-                    height={Math.max(1.5, Math.abs(yOpen - yClose))}
-                    fill={color}
-                    stroke={color}
-                  />
-                </g>
-              );
-            })}
-
-            {/* Y Axis Labels */}
-            {Array.from({ length: 5 }).map((_, i) => {
-              const y = paddingTop + (i / 4) * plotHeight;
-              const price = maxPrice - (i / 4) * priceRange;
-              return (
-                <text
-                  key={`detail-lbl-y-${i}`}
-                  x={plotWidth + 6}
-                  y={y + 4}
-                  fill={token.colorTextDescription}
-                  fontSize={10}
-                >
-                  {price.toLocaleString(undefined, { maximumFractionDigits: 1 })}
-                </text>
-              );
-            })}
-
-            {/* X Axis Labels */}
-            {candlestickData.map((candle, idx) => {
-              if (idx % 8 !== 0) return null;
-              const x = getX(idx);
-              const dateObj = new Date(candle.time);
-              const labelText = selectedRange === 1
-                ? dateObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
-                : selectedRange >= 365
-                  ? dateObj.toLocaleDateString("en-US", { month: "short", year: "numeric" })
-                  : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
-              return (
-                <text
-                  key={`detail-lbl-x-${idx}`}
-                  x={x}
-                  y={height - 10}
-                  fill={token.colorTextDescription}
-                  fontSize={10}
-                  textAnchor="middle"
-                >
-                  {labelText}
-                </text>
-              );
-            })}
-
-            {/* Direct DOM Hover Crosshairs (O(1) updates) */}
-            <line
-              ref={xLineRef}
-              x1={0}
-              y1={0}
-              x2={0}
-              y2={height - paddingBottom}
-              stroke={token.colorTextDescription}
-              strokeDasharray="3 3"
-              display="none"
-            />
-            <line
-              ref={yLineRef}
-              x1={0}
-              y1={0}
-              x2={plotWidth}
-              y2={0}
-              stroke={token.colorTextDescription}
-              strokeDasharray="3 3"
-              display="none"
-            />
-            <circle
-              ref={hoverCircleRef}
-              cx={0}
-              cy={0}
-              r={4}
-              fill={token.colorPrimary}
-              display="none"
-            />
-          </svg>
-        ) : (
-          <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", color: token.colorTextDescription }}>
-            Not enough chart data points.
-          </div>
-        )}
+        <div ref={chartContainerRef} style={{ width: "100%", height: "100%" }} />
       </div>
 
       {/* Timeframe Controls underneath left chart */}
