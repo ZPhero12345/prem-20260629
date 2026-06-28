@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchCoinData, fetchMarketCoins } from "../utils/api";
+import { fetchCoinData, fetchMarketCoins, fetchTrendingCoins } from "../utils/api";
 import { CandlestickChart } from "./CandlestickChart";
 
 import type { UTCTimestamp } from "lightweight-charts";
@@ -20,6 +20,7 @@ export const CryptoDetailPage: React.FC = () => {
 
   const [selectedRange, setSelectedRange] = useState(1);
   const [starred, setStarred] = useState(false);
+  const [filter, setFilter] = useState<"rank" | "trending" | "gainers" | "losers">("rank");
 
   const coinId = id || "bitcoin";
 
@@ -33,11 +34,19 @@ export const CryptoDetailPage: React.FC = () => {
     retryDelay: (attempt) => Math.min(attempt * 5000, 30000),
   });
 
-  // Query watchlist coins live prices dynamically (top 10 by market cap rank)
+  // Query watchlist coins live prices dynamically (top 50 by market cap rank to support Rank/Gainers/Losers sorting)
   const { data: watchlistCoins = [] } = useQuery({
-    queryKey: ["watchlistCoinsData"],
-    queryFn: () => fetchMarketCoins(undefined, 10),
+    queryKey: ["watchlistCoinsData50"],
+    queryFn: () => fetchMarketCoins(undefined, 50),
     staleTime: 30000,
+  });
+
+  // Query trending search coins from API (enabled when filter is set to trending)
+  const { data: trendingData = [] } = useQuery({
+    queryKey: ["watchlistTrendingCoins"],
+    queryFn: fetchTrendingCoins,
+    staleTime: 10 * 60 * 1000,
+    enabled: filter === "trending"
   });
 
   // Fetch public corporate holdings dynamically (commented out for now)
@@ -121,10 +130,34 @@ export const CryptoDetailPage: React.FC = () => {
     };
   }, [candlestickData]);
 
-  // Sidebar watchlists dynamically populated from live market query (top 10 by market cap rank)
+  // Sidebar watchlists dynamically populated based on active filter tab
   const watchlist = useMemo(() => {
+    if (filter === "trending") {
+      if (!trendingData || trendingData.length === 0) {
+        return Array.from({ length: 10 }).map((_, idx) => ({
+          id: `loading-${idx}`,
+          symbol: "...",
+          last: "-",
+          change: "0.00%",
+          isDown: false,
+          image: ""
+        }));
+      }
+      return trendingData.slice(0, 10).map((coin: any) => {
+        const item = coin.item;
+        const changePercent = item.data?.price_change_percentage_24h?.usd || 0;
+        return {
+          id: item.id,
+          symbol: item.symbol.toUpperCase(),
+          last: item.data?.price || "-",
+          change: `${changePercent >= 0 ? "+" : ""}${changePercent.toFixed(2)}%`,
+          isDown: changePercent < 0,
+          image: item.thumb || ""
+        };
+      });
+    }
+
     if (watchlistCoins.length === 0) {
-      // Safe placeholder before loading completes
       return Array.from({ length: 10 }).map((_, idx) => ({
         id: `loading-${idx}`,
         symbol: "...",
@@ -134,7 +167,19 @@ export const CryptoDetailPage: React.FC = () => {
         image: ""
       }));
     }
-    return watchlistCoins.map((coin: any) => ({
+
+    let sortedList = [...watchlistCoins];
+    if (filter === "gainers") {
+      sortedList = sortedList
+        .filter((c: any) => c.price_change_percentage_24h !== undefined)
+        .sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h);
+    } else if (filter === "losers") {
+      sortedList = sortedList
+        .filter((c: any) => c.price_change_percentage_24h !== undefined)
+        .sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h);
+    }
+
+    return sortedList.slice(0, 10).map((coin: any) => ({
       id: coin.id,
       symbol: coin.symbol.toUpperCase(),
       last: coin.current_price !== undefined && coin.current_price !== null 
@@ -146,7 +191,7 @@ export const CryptoDetailPage: React.FC = () => {
       isDown: (coin.price_change_percentage_24h || 0) < 0,
       image: coin.image || ""
     }));
-  }, [watchlistCoins]);
+  }, [filter, watchlistCoins, trendingData]);
 
 
 
@@ -336,18 +381,39 @@ export const CryptoDetailPage: React.FC = () => {
 
           {/* Quick Watchlist Section */}
           <div>
-            <Text style={{ 
-              color: token.colorTextDescription, 
-              fontSize: 10, 
-              fontWeight: 700, 
-              textTransform: "uppercase", 
-              letterSpacing: "0.05em",
-              display: "block",
-              marginBottom: 8,
-              paddingLeft: 4
+            <div style={{ 
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: "center",
+              marginBottom: 10,
+              padding: "0 4px",
+              borderBottom: `1px solid ${token.colorBorderSecondary}`,
+              paddingBottom: 6
             }}>
-              Watchlist
-            </Text>
+              {(["rank", "trending", "gainers", "losers"] as const).map((t) => {
+                const isActive = filter === t;
+                return (
+                  <span
+                    key={t}
+                    onClick={() => setFilter(t)}
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.03em",
+                      cursor: "pointer",
+                      color: isActive ? token.colorText : token.colorTextDescription,
+                      transition: "color 0.2s",
+                      borderBottom: isActive ? `1.5px solid ${token.colorLink || "#1677ff"}` : "none",
+                      paddingBottom: 5,
+                      marginBottom: isActive ? -6 : 0
+                    }}
+                  >
+                    {t}
+                  </span>
+                );
+              })}
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
               {watchlist.map((item) => (
                 <div
