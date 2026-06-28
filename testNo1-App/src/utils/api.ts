@@ -123,26 +123,59 @@ export async function fetchTrendingCoins(): Promise<TrendingCoin[]> {
 
 const FULL_COINS_CACHE_KEY = "cryptometric_full_coins";
 const FULL_COINS_CACHE_TIME_KEY = "cryptometric_full_coins_time";
+const POPULAR_COINS_CACHE_KEY = "cryptometric_popular_coins";
+const POPULAR_COINS_CACHE_TIME_KEY = "cryptometric_popular_coins_time";
 const CACHE_24H_MS = 24 * 60 * 60 * 1000;
 
 export async function initializeCoinsCache(): Promise<void> {
   const now = Date.now();
-  const cachedTime = localStorage.getItem(FULL_COINS_CACHE_TIME_KEY);
-  const cachedData = localStorage.getItem(FULL_COINS_CACHE_KEY);
 
-  if (cachedData && cachedTime && now - parseInt(cachedTime, 10) < CACHE_24H_MS) {
-    return; // Cache is still fresh
+  // 1. Initialize full coins directory cache (/coins/list)
+  const fullCachedTime = localStorage.getItem(FULL_COINS_CACHE_TIME_KEY);
+  const fullCachedData = localStorage.getItem(FULL_COINS_CACHE_KEY);
+
+  if (!fullCachedData || !fullCachedTime || now - parseInt(fullCachedTime, 10) >= CACHE_24H_MS) {
+    try {
+      const res = await fetchFromApi("/coins/list");
+      if (res.ok) {
+        const data = await res.json();
+        // Keep it extremely lightweight: store only id, name, and symbol
+        const mapped = data.map((coin: any) => ({
+          id: coin.id,
+          symbol: coin.symbol,
+          name: coin.name
+        }));
+        localStorage.setItem(FULL_COINS_CACHE_KEY, JSON.stringify(mapped));
+        localStorage.setItem(FULL_COINS_CACHE_TIME_KEY, now.toString());
+      }
+    } catch (err) {
+      console.warn("Failed to background-initialize full coins cache:", err);
+    }
   }
 
-  try {
-    const res = await fetchFromApi("/coins/list");
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem(FULL_COINS_CACHE_KEY, JSON.stringify(data));
-      localStorage.setItem(FULL_COINS_CACHE_TIME_KEY, now.toString());
+  // 2. Initialize popular coins metadata cache (/coins/markets)
+  const popularCachedTime = localStorage.getItem(POPULAR_COINS_CACHE_TIME_KEY);
+  const popularCachedData = localStorage.getItem(POPULAR_COINS_CACHE_KEY);
+
+  if (!popularCachedData || !popularCachedTime || now - parseInt(popularCachedTime, 10) >= CACHE_24H_MS) {
+    try {
+      const res = await fetchFromApi("/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1");
+      if (res.ok) {
+        const data = await res.json();
+        // Store only the key metadata (rank, thumb image) mapped by ID to keep it lightweight
+        const popularMap: Record<string, { rank: number; thumb: string }> = {};
+        data.forEach((coin: any) => {
+          popularMap[coin.id.toLowerCase()] = {
+            rank: coin.market_cap_rank,
+            thumb: coin.image
+          };
+        });
+        localStorage.setItem(POPULAR_COINS_CACHE_KEY, JSON.stringify(popularMap));
+        localStorage.setItem(POPULAR_COINS_CACHE_TIME_KEY, now.toString());
+      }
+    } catch (err) {
+      console.warn("Failed to background-initialize popular coins cache:", err);
     }
-  } catch (err) {
-    console.warn("Failed to background-initialize coins cache:", err);
   }
 }
 
@@ -165,10 +198,12 @@ function calculateLevenshtein(a: string, b: string): number {
 
 function localFuzzySearch(query: string): SearchResult[] {
   const cachedData = localStorage.getItem(FULL_COINS_CACHE_KEY);
+  const popularData = localStorage.getItem(POPULAR_COINS_CACHE_KEY);
   if (!cachedData) return [];
 
   try {
     const coins: { id: string; name: string; symbol: string }[] = JSON.parse(cachedData);
+    const popularMap: Record<string, { rank: number; thumb: string }> = popularData ? JSON.parse(popularData) : {};
     const trimmed = query.trim().toLowerCase();
     const matches: { coin: SearchResult; score: number }[] = [];
 
@@ -198,20 +233,28 @@ function localFuzzySearch(query: string): SearchResult[] {
       }
 
       if (matched) {
+        const popInfo = popularMap[coin.id.toLowerCase()];
         matches.push({
           coin: {
             id: coin.id,
             name: coin.name,
             symbol: coin.symbol,
-            market_cap_rank: 9999,
-            thumb: ""
+            market_cap_rank: popInfo ? popInfo.rank : 9999,
+            thumb: popInfo ? popInfo.thumb : ""
           },
           score
         });
       }
     }
 
-    matches.sort((a, b) => a.score - b.score);
+    // Sort by match score first, then by market cap rank
+    matches.sort((a, b) => {
+      if (a.score !== b.score) {
+        return a.score - b.score;
+      }
+      return (a.coin.market_cap_rank || 9999) - (b.coin.market_cap_rank || 9999);
+    });
+
     return matches.slice(0, 10).map(m => m.coin);
   } catch (err) {
     console.error("Failed to parse local coins search index:", err);
