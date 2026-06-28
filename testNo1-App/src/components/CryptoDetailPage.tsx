@@ -1,18 +1,17 @@
 import React, { useState, useMemo, useRef } from "react";
-import { Typography, Button, Card, Col, Row, Statistic, theme, Table, Spin } from "antd";
+import { Typography, Button, Card, Col, Row, Statistic, theme } from "antd";
 import {
   StarOutlined,
-  StarFilled,
-  GlobalOutlined
+  StarFilled
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchCoinData, fetchPublicTreasury } from "../utils/api";
+import { fetchCoinData } from "../utils/api";
 import { CandlestickChart } from "./CandlestickChart";
 
 import type { UTCTimestamp } from "lightweight-charts";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export const CryptoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,13 +33,15 @@ export const CryptoDetailPage: React.FC = () => {
     retryDelay: (attempt) => Math.min(attempt * 5000, 30000),
   });
 
-  // Fetch public corporate holdings dynamically (only if API supports it, e.g. bitcoin, ethereum, solana)
+  // Fetch public corporate holdings dynamically (commented out for now)
+  /*
   const { data: treasuryData, isLoading: treasuryLoading, isError: treasuryError, refetch: refetchTreasury } = useQuery({
     queryKey: ["publicTreasury", coinId],
     queryFn: () => fetchPublicTreasury(coinId),
     staleTime: 10 * 60 * 1000,
     retry: 0,
   });
+  */
 
   const coinDetails = assetData?.coinDetails || {
     name: coinId.charAt(0).toUpperCase() + coinId.slice(1),
@@ -179,7 +180,7 @@ export const CryptoDetailPage: React.FC = () => {
             overallOhlc={overallOhlc}
           />
 
-          {/* Dynamic Corporate Holdings Card */}
+          {/* Dynamic Corporate Holdings Card commented out for now
           {((["bitcoin", "ethereum", "solana"].includes(coinId.toLowerCase()) && (treasuryLoading || treasuryError)) || 
             (treasuryData && treasuryData.companies && treasuryData.companies.length > 0)) && (
             <Card
@@ -250,6 +251,7 @@ export const CryptoDetailPage: React.FC = () => {
               )}
             </Card>
           )}
+          */}
         </div>
 
         {/* RIGHT COLUMN: OHLC and Watchlist */}
