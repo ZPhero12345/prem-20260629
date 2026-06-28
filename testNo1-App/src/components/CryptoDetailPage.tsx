@@ -147,15 +147,13 @@ export const CryptoDetailPage: React.FC = () => {
         const item = coin.item;
         const changePercent = item.data?.price_change_percentage_24h?.usd || 0;
         let priceStr = item.data?.price || "-";
-        if (typeof priceStr === "string" && priceStr.includes("$")) {
-          // Strip HTML tags if any, then extract numeric parts
-          const cleanHtml = priceStr.replace(/<[^>]*>/g, "");
-          const numValue = parseFloat(cleanHtml.replace(/[^0-9.]/g, ""));
-          if (!isNaN(numValue)) {
-            priceStr = `$${numValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-          } else {
-            priceStr = cleanHtml;
-          }
+        const valString = String(priceStr);
+        const cleanHtml = valString.replace(/<[^>]*>/g, "");
+        const numValue = parseFloat(cleanHtml.replace(/[^0-9.]/g, ""));
+        if (!isNaN(numValue)) {
+          priceStr = `$${numValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        } else {
+          priceStr = cleanHtml;
         }
         return {
           id: item.id,
