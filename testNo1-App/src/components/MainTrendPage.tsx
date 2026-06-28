@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, Typography, Row, Col, Table, theme, Segmented, Spin, Button } from "antd";
 import { StarFilled, StarOutlined, GlobalOutlined } from "@ant-design/icons";
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { fetchMarketCoins, fetchPublicTreasury } from "../utils/api";
 import type { GlobalStats } from "../utils/api";
@@ -242,27 +242,7 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
                         );
                       })}
                     </Pie>
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          const data = payload[0].payload;
-                          return (
-                            <div style={{
-                              background: token.colorBgElevated,
-                              border: `1px solid ${token.colorBorder}`,
-                              padding: "8px 12px",
-                              borderRadius: 6,
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-                            }}>
-                              <Text style={{ fontWeight: 600, color: token.colorText, display: "block" }}>{data.fullName}</Text>
-                              <Text type="secondary" style={{ fontSize: 11, display: "block" }}>Share: <strong style={{ color: data.color }}>{data.value.toFixed(2)}%</strong></Text>
-                              <Text type="secondary" style={{ fontSize: 11 }}>Valuation: <strong>{formatCurrency(data.valUsd)}</strong></Text>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
+                    {/* Tooltip removed to rely solely on center HUD */}
                   </PieChart>
                 </ResponsiveContainer>
 
