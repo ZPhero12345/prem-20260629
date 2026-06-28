@@ -56,15 +56,16 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
         symbol: coin.symbol.toUpperCase(),
         name: coin.name,
         price: coin.current_price || 0,
-        change: coin.price_change_percentage_24h || 0
+        change: coin.price_change_percentage_24h || 0,
+        image: coin.image
       }))
     : [
-        { key: "1", id: "avalanche-2", symbol: "AVAX", name: "AVAX", price: 38.92, change: -4.21 },
-        { key: "2", id: "matic-network", symbol: "MATIC", name: "MATIC", price: 92.68, change: 7.84 },
-        { key: "3", id: "oasis-network", symbol: "ROSE", name: "ROSE", price: 8.33, change: 1.02 },
-        { key: "4", id: "decred", symbol: "DCR", name: "DCR", price: 45.69, change: -17.88 },
-        { key: "5", id: "cardano", symbol: "ADA", name: "ADA", price: 0.435, change: 5.21 },
-        { key: "6", id: "solana", symbol: "SOL", name: "SOL", price: 145.30, change: -2.37 }
+        { key: "1", id: "avalanche-2", symbol: "AVAX", name: "AVAX", price: 38.92, change: -4.21, image: "https://coin-images.coingecko.com/coins/images/825/large/AVAX.png?1696501867" },
+        { key: "2", id: "matic-network", symbol: "MATIC", name: "MATIC", price: 92.68, change: 7.84, image: "https://coin-images.coingecko.com/coins/images/4713/large/polygon.png?1698233740" },
+        { key: "3", id: "oasis-network", symbol: "ROSE", name: "ROSE", price: 8.33, change: 1.02, image: "https://coin-images.coingecko.com/coins/images/13162/large/rose.png?1696512918" },
+        { key: "4", id: "decred", symbol: "DCR", name: "DCR", price: 45.69, change: -17.88, image: "https://coin-images.coingecko.com/coins/images/329/large/decred.png?1696501499" },
+        { key: "5", id: "cardano", symbol: "ADA", name: "ADA", price: 0.435, change: 5.21, image: "https://coin-images.coingecko.com/coins/images/975/large/cardano.png?1696502090" },
+        { key: "6", id: "solana", symbol: "SOL", name: "SOL", price: 145.30, change: -2.37, image: "https://coin-images.coingecko.com/coins/images/4128/large/solana.png?1696504756" }
       ];
 
   const totalMarketCap = globalStats?.total_market_cap?.usd || 0;
@@ -76,10 +77,10 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
   const othersShare = Math.max(0, 100 - btcShare - ethShare - stablecoinShare);
 
   const pieData = [
-    { name: "BTC", value: btcShare, valUsd: totalMarketCap * (btcShare / 100), color: "#f7931a", id: "bitcoin", fullName: "Bitcoin" },
-    { name: "ETH", value: ethShare, valUsd: totalMarketCap * (ethShare / 100), color: "#627eea", id: "ethereum", fullName: "Ethereum" },
-    { name: "Stablecoins", value: stablecoinShare, valUsd: totalMarketCap * (stablecoinShare / 100), color: "#26a17b", fullName: "Stablecoins" },
-    { name: "Others", value: othersShare, valUsd: totalMarketCap * (othersShare / 100), color: "#8b90a0", fullName: "Others" }
+    { name: "BTC", value: btcShare, valUsd: totalMarketCap * (btcShare / 100), color: "#f7931a", id: "bitcoin", fullName: "Bitcoin", logo: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400" },
+    { name: "ETH", value: ethShare, valUsd: totalMarketCap * (ethShare / 100), color: "#627eea", id: "ethereum", fullName: "Ethereum", logo: "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png?1696501484" },
+    { name: "Stablecoins", value: stablecoinShare, valUsd: totalMarketCap * (stablecoinShare / 100), color: "#26a17b", fullName: "Stablecoins", logo: "" },
+    { name: "Others", value: othersShare, valUsd: totalMarketCap * (othersShare / 100), color: "#8b90a0", fullName: "Others", logo: "" }
   ];
 
   const formatCurrency = (val: number) => {
@@ -244,7 +245,11 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ width: 10, height: 10, borderRadius: "50%", background: item.color }} />
+                        {item.logo ? (
+                          <img src={item.logo} alt={item.fullName} style={{ width: 16, height: 16, borderRadius: "50%" }} />
+                        ) : (
+                          <span style={{ width: 16, height: 16, borderRadius: "50%", background: item.color, display: "inline-block" }} />
+                        )}
                         <Text style={{ color: token.colorText, fontWeight: 600 }}>{item.fullName}</Text>
                       </div>
                       <div style={{ textAlign: "right" }}>
@@ -307,11 +312,14 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
                 title: "Pairs",
                 dataIndex: "symbol",
                 key: "symbol",
-                render: (text) => (
+                render: (text, record: any) => (
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div onClick={(e) => { e.stopPropagation(); toggleStar(text); }} style={{ cursor: "pointer" }}>
                       {starredCoins[text] ? <StarFilled style={{ color: "#ffc107" }} /> : <StarOutlined style={{ color: token.colorTextDescription }} />}
                     </div>
+                    {record.image && (
+                      <img src={record.image} alt={text} style={{ width: 16, height: 16, borderRadius: "50%" }} />
+                    )}
                     <Text style={{ color: token.colorText, fontWeight: 600 }}>{text}</Text>
                   </div>
                 )
