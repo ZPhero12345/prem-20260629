@@ -192,29 +192,43 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
                   transform: "translate(-50%, -50%)",
                   textAlign: "center",
                   pointerEvents: "none",
-                  width: "140px"
+                  width: "140px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center"
                 }}>
                   {activeIndex !== null ? (
                     <>
-                      <Title level={3} style={{ margin: 0, color: pieData[activeIndex].color, fontWeight: 700 }}>
+                      {pieData[activeIndex].logo ? (
+                        <img 
+                          src={pieData[activeIndex].logo} 
+                          alt={pieData[activeIndex].name} 
+                          style={{ width: 22, height: 22, borderRadius: "50%", marginBottom: 2 }} 
+                        />
+                      ) : (
+                        <div style={{ width: 22, height: 22, borderRadius: "50%", background: pieData[activeIndex].color, marginBottom: 2 }} />
+                      )}
+                      <Title level={4} style={{ margin: 0, color: pieData[activeIndex].color, fontWeight: 700, fontSize: 18, lineHeight: 1.2 }}>
                         {pieData[activeIndex].value.toFixed(1)}%
                       </Title>
-                      <Text type="secondary" style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", display: "block" }}>
+                      <Text type="secondary" style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", display: "block", marginTop: 2 }}>
                         {pieData[activeIndex].name} Share
                       </Text>
-                      <Text style={{ fontSize: 11, fontWeight: 700, color: token.colorTextDescription }}>
+                      <Text style={{ fontSize: 10, fontWeight: 700, color: token.colorTextDescription }}>
                         {formatCurrency(pieData[activeIndex].valUsd)}
                       </Text>
                     </>
                   ) : (
                     <>
-                      <Title level={4} style={{ margin: 0, color: token.colorText, fontWeight: 700, fontSize: 18 }}>
+                      <GlobalOutlined style={{ fontSize: 20, color: token.colorPrimary, marginBottom: 4 }} />
+                      <Title level={4} style={{ margin: 0, color: token.colorText, fontWeight: 700, fontSize: 16, lineHeight: 1.2 }}>
                         {formatCurrency(totalMarketCap)}
                       </Title>
-                      <Text type="secondary" style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, display: "block" }}>
+                      <Text type="secondary" style={{ fontSize: 9, textTransform: "uppercase", fontWeight: 700, display: "block", marginTop: 2 }}>
                         Total Cap
                       </Text>
-                      <Text style={{ fontSize: 10, color: token.colorTextDescription }}>
+                      <Text style={{ fontSize: 9, color: token.colorTextDescription }}>
                         Vol: {formatCurrency(totalVolume24h)}
                       </Text>
                     </>
