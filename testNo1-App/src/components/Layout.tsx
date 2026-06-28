@@ -10,9 +10,10 @@ interface LayoutProps {
   isDarkMode: boolean;
   onToggleTheme: () => void;
   fullBleed?: boolean;
+  searchBar?: React.ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTheme, fullBleed }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTheme, fullBleed, searchBar }) => {
   return (
     <AntLayout style={{ minHeight: "100vh", background: isDarkMode ? "#131313" : "#f5f5f5", transition: "background 0.3s ease" }}>
       {/* Sleek Top Navigation Header */}
@@ -45,6 +46,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTh
             CryptoMetric
           </Title>
         </div>
+
+        {/* Centered Search Bar */}
+        {searchBar && (
+          <div style={{ flex: 1, maxWidth: 480, margin: "0 24px", display: "flex", alignItems: "center", justifyContent: "center", height: "38px", lineHeight: "normal" }}>
+            {searchBar}
+          </div>
+        )}
 
         {/* Theme Toggle Button */}
         <Button 

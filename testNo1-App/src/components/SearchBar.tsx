@@ -101,7 +101,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStat
   }, []);
 
   return (
-    <div style={{ width: "100%", maxWidth: 640 }}>
+    <div style={{ width: "100%", maxWidth: 640, display: "flex", alignItems: "center", lineHeight: "normal" }}>
       <AutoComplete
         value={value}
         options={options}
@@ -122,12 +122,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStat
           // Slight delay so click triggers select before blur hides list
           setTimeout(() => onFocusStateChange(false), 200);
         }}
-        style={{ width: "100%" }}
+        style={{ width: "100%", display: "flex", alignItems: "center" }}
         popupClassName="search-autocomplete-popup"
       >
         <Input
-          className="ant-select-selection-search-input"
-          size="large"
           placeholder="Search assets (e.g. BTC, ETH, Solana)"
           prefix={<SearchOutlined style={{ color: token.colorTextDescription, marginRight: 8 }} />}
           suffix={loading ? <Spin size="small" /> : null}
@@ -142,7 +140,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStat
             background: token.colorBgContainer,
             border: `1px solid ${token.colorBorder}`,
             color: token.colorText,
-            height: 48,
+            height: 38,
+            borderRadius: 6,
             transition: "background 0.3s, border-color 0.3s, color 0.3s"
           }}
         />

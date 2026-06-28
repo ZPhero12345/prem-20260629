@@ -108,7 +108,18 @@ function MainAppContent() {
         },
       }}
     >
-      <Layout isDarkMode={isDarkMode} onToggleTheme={() => setIsDarkMode(prev => !prev)} fullBleed={isCoinDetail}>
+      <Layout 
+        isDarkMode={isDarkMode} 
+        onToggleTheme={() => setIsDarkMode(prev => !prev)} 
+        fullBleed={isCoinDetail}
+        searchBar={
+          <SearchBar 
+            onSelectAsset={(id) => navigate(`/coin/${id}`)} 
+            onFocusStateChange={setIsSearchFocused} 
+            trendingCoins={trendingCoins}
+          />
+        }
+      >
         <Routes>
           <Route path="/" element={
             <>
@@ -123,15 +134,7 @@ function MainAppContent() {
               )}
               {/* Top Header section */}
               <Row gutter={[24, 24]} align="middle" style={{ marginBottom: 24 }}>
-                <Col xs={24} lg={16}>
-                  <SearchBar 
-                    onSelectAsset={(id) => navigate(`/coin/${id}`)} 
-                    onFocusStateChange={setIsSearchFocused} 
-                    trendingCoins={trendingCoins}
-                  />
-                </Col>
-                
-                <Col xs={24} lg={8}>
+                <Col xs={24}>
                   <Card 
                     style={{ 
                       background: isDarkMode ? "#1c1b1b" : "#ffffff", 
@@ -170,8 +173,8 @@ function MainAppContent() {
                 </Col>
               </Row>
 
-              {/* Suggest trending coins immediately on focus or show by default */}
-              {(isSearchFocused || trendingCoins.length > 0) && (
+              {/* Suggest trending coins */}
+              {trendingCoins.length > 0 && (
                 <TrendingBar 
                   trendingCoins={trendingCoins} 
                   loading={trendingLoading} 
