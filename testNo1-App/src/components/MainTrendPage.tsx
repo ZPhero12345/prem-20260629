@@ -68,13 +68,13 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
 
   const btcShare = globalStats?.market_cap_percentage?.btc || 0;
   const ethShare = globalStats?.market_cap_percentage?.eth || 0;
-  const stablecoinShare = (globalStats?.market_cap_percentage?.usdt || 0) + (globalStats?.market_cap_percentage?.usdc || 0);
-  const othersShare = Math.max(0, 100 - btcShare - ethShare - stablecoinShare);
+  const usdtShare = globalStats?.market_cap_percentage?.usdt || 0;
+  const othersShare = Math.max(0, 100 - btcShare - ethShare - usdtShare);
 
   const pieData = [
     { name: "BTC", value: btcShare, valUsd: totalMarketCap * (btcShare / 100), color: "#f7931a", id: "bitcoin", fullName: "Bitcoin", logo: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400" },
     { name: "ETH", value: ethShare, valUsd: totalMarketCap * (ethShare / 100), color: "#627eea", id: "ethereum", fullName: "Ethereum", logo: "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png?1696501484" },
-    { name: "Stablecoins", value: stablecoinShare, valUsd: totalMarketCap * (stablecoinShare / 100), color: "#26a17b", fullName: "Stablecoins", logo: "" },
+    { name: "USDT", value: usdtShare, valUsd: totalMarketCap * (usdtShare / 100), color: "#26a17b", id: "tether", fullName: "Tether (USDT)", logo: "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501494" },
     { name: "Others", value: othersShare, valUsd: totalMarketCap * (othersShare / 100), color: "#8b90a0", fullName: "Others", logo: "" }
   ];
 
