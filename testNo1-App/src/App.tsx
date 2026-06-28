@@ -1,41 +1,24 @@
 import { useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { SearchBar } from "./components/SearchBar";
 import { TrendingBar } from "./components/TrendingBar";
 import { MainTrendPage } from "./components/MainTrendPage";
 import { CryptoDetailPage } from "./components/CryptoDetailPage";
-import { fetchTrendingCoins, fetchCoinData, fetchGlobalStats } from "./utils/api";
-import type { TrendingCoin, MarketChartPoint, OhlcData } from "./utils/api";
+import { fetchTrendingCoins, fetchGlobalStats } from "./utils/api";
+import type { TrendingCoin } from "./utils/api";
 import { Row, Col, Card, Typography, ConfigProvider, theme, Alert } from "antd";
 import { ArrowUpOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
-interface AssetDataPayload {
-  chartData: MarketChartPoint[];
-  ohlc: OhlcData;
-  coinDetails: {
-    name: string;
-    symbol: string;
-    price: number;
-    change24h: number;
-    marketCap: string;
-    volume: string;
-    creator: string;
-    launchYear: number;
-    consensus: string;
-    supply: string;
-    description: string;
-  };
-}
+
 
 function MainAppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const isCoinDetail = location.pathname.startsWith("/coin");
-  const [selectedRange] = useState(7);
   const [_isSearchFocused, setIsSearchFocused] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
@@ -55,14 +38,7 @@ function MainAppContent() {
     retry: 1,
   });
 
-  // Fetch default bitcoin chart for the main page trend chart
-  const { data: assetData, isLoading: assetLoading, isError: assetError, error: apiError } = useQuery<AssetDataPayload>({
-    queryKey: ["coinData", "bitcoin", selectedRange],
-    queryFn: () => fetchCoinData("bitcoin", selectedRange),
-    placeholderData: keepPreviousData,
-    staleTime: 30000,
-    retry: 1,
-  });
+
 
 
   const dynamicTextColor = isDarkMode ? "#e5e2e1" : "#1f1f1f";
@@ -119,10 +95,10 @@ function MainAppContent() {
         <Routes>
           <Route path="/" element={
             <>
-              {(assetError || trendingError) && (
+              {trendingError && (
                 <Alert
                   message="API Rate Limit Reached"
-                  description={apiError instanceof Error ? apiError.message : "The public CoinGecko API has rate-limited requests. Showing static fallback values. Please try again in a few moments."}
+                  description="The public CoinGecko API has rate-limited requests. Showing static fallback values. Please try again in a few moments."
                   type="warning"
                   showIcon
                   style={{ marginBottom: 24 }}
@@ -180,9 +156,8 @@ function MainAppContent() {
 
               {/* Main Trend Dashboard Content */}
               <MainTrendPage
-                chartData={assetData?.chartData || []}
-                ohlc={assetData?.ohlc || null}
-                loading={assetLoading}
+                globalStats={globalStats}
+                loading={trendingLoading}
                 onSelectAsset={(id) => navigate(`/coin/${id}`)}
               />
             </>

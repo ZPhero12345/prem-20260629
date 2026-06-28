@@ -1,28 +1,26 @@
 import React, { useState } from "react";
 import { Card, Typography, Row, Col, Table, theme, Segmented, Spin } from "antd";
 import { StarFilled, StarOutlined, GlobalOutlined } from "@ant-design/icons";
-import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip } from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { fetchMarketCoins, fetchPublicTreasury } from "../utils/api";
-import type { MarketChartPoint, OhlcData } from "../utils/api";
+import type { GlobalStats } from "../utils/api";
 
-const { Text } = Typography;
+const { Title, Text } = Typography;
 
 interface MainTrendPageProps {
-  chartData: MarketChartPoint[];
-  ohlc: OhlcData | null;
   loading: boolean;
   onSelectAsset: (id: string) => void;
+  globalStats?: GlobalStats;
 }
 
 export const MainTrendPage: React.FC<MainTrendPageProps> = ({
-  chartData,
-  ohlc: _ohlc,
   loading: _loading,
-  onSelectAsset
+  onSelectAsset,
+  globalStats
 }) => {
   const { token } = theme.useToken();
-  const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [starredCoins, setStarredCoins] = useState<Record<string, boolean>>({
     AVAX: true,
     MATIC: true,
@@ -69,25 +67,49 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
         { key: "6", id: "solana", symbol: "SOL", name: "SOL", price: 145.30, change: -2.37 }
       ];
 
+  const totalMarketCap = globalStats?.total_market_cap?.usd || 0;
+  const totalVolume24h = globalStats?.total_volume?.usd || 0;
 
-  // Convert chartData to standard format for BarChart
-  const displayData = chartData.map((pt, idx) => ({
-    name: new Date(pt.time).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    value: pt.price,
-    index: idx
-  }));
+  const btcShare = globalStats?.market_cap_percentage?.btc || 0;
+  const ethShare = globalStats?.market_cap_percentage?.eth || 0;
+  const stablecoinShare = (globalStats?.market_cap_percentage?.usdt || 0) + (globalStats?.market_cap_percentage?.usdc || 0);
+  const othersShare = Math.max(0, 100 - btcShare - ethShare - stablecoinShare);
 
-  // Tooltip details based on hovered bar
-  const activePoint = hoveredBarIndex !== null ? displayData[hoveredBarIndex] : displayData[displayData.length - 1];
+  const pieData = [
+    { name: "BTC", value: btcShare, valUsd: totalMarketCap * (btcShare / 100), color: "#f7931a", id: "bitcoin", fullName: "Bitcoin" },
+    { name: "ETH", value: ethShare, valUsd: totalMarketCap * (ethShare / 100), color: "#627eea", id: "ethereum", fullName: "Ethereum" },
+    { name: "Stablecoins", value: stablecoinShare, valUsd: totalMarketCap * (stablecoinShare / 100), color: "#26a17b", fullName: "Stablecoins" },
+    { name: "Others", value: othersShare, valUsd: totalMarketCap * (othersShare / 100), color: "#8b90a0", fullName: "Others" }
+  ];
 
-  const statLabelStyle = { color: token.colorTextDescription, fontSize: 13 };
+  const formatCurrency = (val: number) => {
+    if (val === 0) return "$0.00";
+    if (val >= 1e12) return `$${(val / 1e12).toFixed(2)}T`;
+    if (val >= 1e9) return `$${(val / 1e9).toFixed(2)}B`;
+    if (val >= 1e6) return `$${(val / 1e6).toFixed(2)}M`;
+    return `$${val.toLocaleString()}`;
+  };
 
   return (
     <Row gutter={[24, 24]}>
       {/* Left side column: Main chart and details */}
       <Col xs={24} xl={17}>
-        {/* Main trend bar chart card */}
+        {/* Market Dominance Donut Chart Card */}
         <Card
+          title={
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+              <span style={{ color: token.colorText, fontSize: 16, fontWeight: 700 }}>Crypto Market Cap Dominance</span>
+              <div style={{
+                background: token.colorFillAlter,
+                padding: "2px 8px",
+                borderRadius: 4,
+                fontSize: 11,
+                color: token.colorTextDescription
+              }}>
+                Live Stats
+              </div>
+            </div>
+          }
           styles={{ body: { padding: 24 } }}
           style={{
             background: token.colorBgContainer,
@@ -97,89 +119,149 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
             transition: "background 0.3s, border-color 0.3s"
           }}
         >
-          {/* Header Stats */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <Text style={statLabelStyle}>
-                  {activePoint ? activePoint.name : "May 27 2025 2:30PM"} :
-                </Text>
-                <Text style={statLabelStyle}>
-                  Open <span style={{ color: token.colorSuccess, fontWeight: 600 }}>↑ (+2.5%)</span>
-                </Text>
-                <Text style={statLabelStyle}>
-                  High <span style={{ color: token.colorSuccess, fontWeight: 600 }}>↑ (+3.0%)</span>
-                </Text>
-                <Text style={statLabelStyle}>
-                  Low <span style={{ color: token.colorError, fontWeight: 600 }}>↓ (-1.2%)</span>
-                </Text>
-                <Text style={statLabelStyle}>
-                  Change <span style={{ color: token.colorSuccess, fontWeight: 600 }}>↑ (+2.7%)</span>
-                </Text>
-              </div>
-            </div>
-          </div>
+          <Row gutter={[24, 24]} align="middle">
+            <Col xs={24} md={12}>
+              {/* Donut Chart Container */}
+              <div style={{ height: 260, position: "relative" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={80}
+                      outerRadius={105}
+                      paddingAngle={4}
+                      dataKey="value"
+                      onMouseEnter={(_, index) => setActiveIndex(index)}
+                      onMouseLeave={() => setActiveIndex(null)}
+                      onClick={(data: any) => {
+                        const coinId = data?.payload?.id || data?.id;
+                        if (coinId) {
+                          onSelectAsset(coinId);
+                        }
+                      }}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {pieData.map((entry, index) => {
+                        const isHovered = index === activeIndex;
+                        return (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={entry.color}
+                            style={{
+                              transform: isHovered ? "scale(1.05)" : "scale(1)",
+                              transformOrigin: "50% 50%",
+                              transition: "all 0.2s ease"
+                            }}
+                          />
+                        );
+                      })}
+                    </Pie>
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div style={{
+                              background: token.colorBgElevated,
+                              border: `1px solid ${token.colorBorder}`,
+                              padding: "8px 12px",
+                              borderRadius: 6,
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                            }}>
+                              <Text style={{ fontWeight: 600, color: token.colorText, display: "block" }}>{data.fullName}</Text>
+                              <Text type="secondary" style={{ fontSize: 11, display: "block" }}>Share: <strong style={{ color: data.color }}>{data.value.toFixed(2)}%</strong></Text>
+                              <Text type="secondary" style={{ fontSize: 11 }}>Valuation: <strong>{formatCurrency(data.valUsd)}</strong></Text>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
 
-          {/* Bar Chart Canvas */}
-          <div style={{ height: 260, position: "relative" }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={displayData}
-                onMouseMove={(state) => {
-                  if (state && state.activeTooltipIndex !== undefined) {
-                    setHoveredBarIndex(typeof state.activeTooltipIndex === 'number' ? state.activeTooltipIndex : null);
-                  }
-                }}
-                onMouseLeave={() => setHoveredBarIndex(null)}
-              >
-                <XAxis dataKey="name" stroke={token.colorBorder} fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis hide domain={["auto", "auto"]} />
-                <Tooltip
-                  cursor={{ fill: token.colorFillAlter }}
-                  content={() => null}
-                />
-                <Bar dataKey="value" radius={[2, 2, 0, 0]}>
-                  {displayData.map((_, index) => {
-                    const isHovered = index === hoveredBarIndex;
-                    const fill = isHovered ? "#ff6b35" : (hoveredBarIndex !== null && Math.abs(index - hoveredBarIndex) <= 2) ? "#f17e52" : token.colorBorder;
-                    return <Cell key={`cell-${index}`} fill={fill} style={{ transition: "fill 0.15s ease" }} />;
-                  })}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-
-            {/* Custom Tooltip Card positioned inside chart space */}
-            {activePoint && (
-              <div style={{
-                position: "absolute",
-                top: 30,
-                left: "50%",
-                transform: "translateX(-50%)",
-                background: token.colorBgElevated,
-                borderRadius: 6,
-                padding: "8px 16px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                pointerEvents: "none",
-                minWidth: 150,
-                border: `1px solid ${token.colorBorder}`
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ff6b35" }}></span>
-                  <Text style={{ color: token.colorText, fontWeight: 600, fontSize: 12 }}>{activePoint.name}</Text>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <Text style={{ color: token.colorTextDescription, fontSize: 11 }}>Price</Text>
-                  <Text style={{ color: token.colorText, fontWeight: 700, fontSize: 12 }}>${activePoint.value.toLocaleString()}</Text>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <Text style={{ color: token.colorTextDescription, fontSize: 11 }}>Vol (24h)</Text>
-                  <Text style={{ color: token.colorText, fontWeight: 700, fontSize: 12 }}>${(activePoint.value * 0.95).toFixed(0)}</Text>
+                {/* Central HUD */}
+                <div style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  textAlign: "center",
+                  pointerEvents: "none",
+                  width: "140px"
+                }}>
+                  {activeIndex !== null ? (
+                    <>
+                      <Title level={3} style={{ margin: 0, color: pieData[activeIndex].color, fontWeight: 700 }}>
+                        {pieData[activeIndex].value.toFixed(1)}%
+                      </Title>
+                      <Text type="secondary" style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", display: "block" }}>
+                        {pieData[activeIndex].name} Share
+                      </Text>
+                      <Text style={{ fontSize: 11, fontWeight: 700, color: token.colorTextDescription }}>
+                        {formatCurrency(pieData[activeIndex].valUsd)}
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Title level={4} style={{ margin: 0, color: token.colorText, fontWeight: 700, fontSize: 18 }}>
+                        {formatCurrency(totalMarketCap)}
+                      </Title>
+                      <Text type="secondary" style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 700, display: "block" }}>
+                        Total Cap
+                      </Text>
+                      <Text style={{ fontSize: 10, color: token.colorTextDescription }}>
+                        Vol: {formatCurrency(totalVolume24h)}
+                      </Text>
+                    </>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
+            </Col>
+
+            <Col xs={24} md={12}>
+              {/* Detailed Breakdown Legend List */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {pieData.map((item, index) => {
+                  const isHovered = index === activeIndex;
+                  return (
+                    <div
+                      key={item.name}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      onMouseLeave={() => setActiveIndex(null)}
+                      onClick={() => item.id && onSelectAsset(item.id)}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "8px 12px",
+                        borderRadius: 6,
+                        background: isHovered ? token.colorFillAlter : "transparent",
+                        cursor: item.id ? "pointer" : "default",
+                        transition: "background 0.2s ease"
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ width: 10, height: 10, borderRadius: "50%", background: item.color }} />
+                        <Text style={{ color: token.colorText, fontWeight: 600 }}>{item.fullName}</Text>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <Text style={{ color: token.colorText, fontWeight: 700, display: "block" }}>
+                          {item.value.toFixed(2)}%
+                        </Text>
+                        <Text type="secondary" style={{ fontSize: 11 }}>
+                          {formatCurrency(item.valUsd)}
+                        </Text>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Col>
+          </Row>
         </Card>
-
       </Col>
 
       {/* Right side column: Watchlist Table and Order Book */}
