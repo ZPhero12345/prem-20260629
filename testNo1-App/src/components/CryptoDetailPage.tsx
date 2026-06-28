@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from "react";
-import { Typography, Button, Card, Col, Row, Statistic, theme } from "antd";
+import { Typography, Button, theme } from "antd";
 import {
   StarOutlined,
   StarFilled
@@ -11,7 +11,7 @@ import { CandlestickChart } from "./CandlestickChart";
 
 import type { UTCTimestamp } from "lightweight-charts";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export const CryptoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -258,74 +258,71 @@ export const CryptoDetailPage: React.FC = () => {
         <div className="detail-sidebar-column" style={{ 
           borderLeft: `1px solid ${token.colorBorderSecondary}`,
           background: token.colorBgContainer,
-          padding: 24,
-          gap: 24
+          padding: "16px 12px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 20
         }}>
-          {/* OHLC Statistics Card */}
-          <Card
-            title={<span style={{ color: token.colorText, fontSize: 14, fontWeight: 700 }}>OHLC Statistics</span>}
-            style={{
-              background: token.colorBgContainer,
-              border: `1px solid ${token.colorBorderSecondary}`,
-              borderRadius: 8,
-              transition: "background 0.3s, border-color 0.3s"
-            }}
-            styles={{ body: { padding: 16 } }}
-          >
-            <Row gutter={[12, 12]}>
-              <Col span={12}>
-                <div>
-                  <span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase", display: "block", marginBottom: 4 }}>Open</span>
-                  <span ref={openStatRef} style={{ color: token.colorText, fontSize: 16, fontWeight: 700 }}>$0.00</span>
-                </div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase", display: "block", marginBottom: 4 }}>High</span>
-                  <span ref={highStatRef} style={{ color: token.colorSuccess, fontSize: 16, fontWeight: 700 }}>$0.00</span>
-                </div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase", display: "block", marginBottom: 4 }}>Low</span>
-                  <span ref={lowStatRef} style={{ color: token.colorError, fontSize: 16, fontWeight: 700 }}>$0.00</span>
-                </div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase", display: "block", marginBottom: 4 }}>Close</span>
-                  <span ref={closeStatRef} style={{ color: token.colorSuccess, fontSize: 16, fontWeight: 700 }}>$0.00</span>
-                </div>
-              </Col>
-              <Col span={12} style={{ marginTop: 8 }}>
-                <Statistic
-                  title={<span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase" }}>Market Cap</span>}
-                  value={coinDetails.marketCap}
-                  valueStyle={{ color: token.colorText, fontSize: 15, fontWeight: 600 }}
-                />
-              </Col>
-              <Col span={12} style={{ marginTop: 8 }}>
-                <Statistic
-                  title={<span style={{ color: token.colorTextDescription, fontSize: 11, textTransform: "uppercase" }}>Volume</span>}
-                  value={coinDetails.volume}
-                  valueStyle={{ color: token.colorText, fontSize: 15, fontWeight: 600 }}
-                />
-              </Col>
-            </Row>
-          </Card>
-
-          {/* Simple watchlist pairs list */}
-          <Card
-            title={<span style={{ color: token.colorText, fontSize: 14, fontWeight: 700 }}>Quick Watchlist</span>}
-            style={{
-              background: token.colorBgContainer,
-              border: `1px solid ${token.colorBorderSecondary}`,
-              borderRadius: 8,
-              transition: "background 0.3s, border-color 0.3s"
-            }}
-            styles={{ body: { padding: 0 } }}
-          >
+          {/* OHLC Statistics Section */}
+          <div>
+            <Text style={{ 
+              color: token.colorTextDescription, 
+              fontSize: 10, 
+              fontWeight: 700, 
+              textTransform: "uppercase", 
+              letterSpacing: "0.05em",
+              display: "block",
+              marginBottom: 8,
+              paddingLeft: 4
+            }}>
+              Key Statistics
+            </Text>
             <div style={{ display: "flex", flexDirection: "column" }}>
+              {[
+                { label: "Open", ref: openStatRef, color: token.colorText },
+                { label: "High", ref: highStatRef, color: token.colorSuccess },
+                { label: "Low", ref: lowStatRef, color: token.colorError },
+                { label: "Close", ref: closeStatRef, color: token.colorSuccess },
+                { label: "Market Cap", val: coinDetails.marketCap, color: token.colorText },
+                { label: "Volume (24h)", val: coinDetails.volume, color: token.colorText },
+              ].map((stat, idx) => (
+                <div 
+                  key={idx} 
+                  style={{ 
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    alignItems: "center",
+                    padding: "6px 4px", 
+                    borderBottom: `1px solid ${token.colorBorderSecondary}`,
+                    fontSize: 12 
+                  }}
+                >
+                  <Text type="secondary" style={{ fontSize: 11 }}>{stat.label}</Text>
+                  {stat.ref ? (
+                    <span ref={stat.ref} style={{ fontWeight: 600, color: stat.color }}>$0.00</span>
+                  ) : (
+                    <Text style={{ fontWeight: 600, color: stat.color }}>{stat.val}</Text>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Watchlist Section */}
+          <div>
+            <Text style={{ 
+              color: token.colorTextDescription, 
+              fontSize: 10, 
+              fontWeight: 700, 
+              textTransform: "uppercase", 
+              letterSpacing: "0.05em",
+              display: "block",
+              marginBottom: 8,
+              paddingLeft: 4
+            }}>
+              Watchlist
+            </Text>
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
               {watchlist.map((item) => (
                 <div
                   key={item.symbol}
@@ -333,20 +330,25 @@ export const CryptoDetailPage: React.FC = () => {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    padding: "12px 16px",
-                    borderBottom: `1px solid ${token.colorBorder}`,
-                    cursor: "pointer"
+                    alignItems: "center",
+                    padding: "5px 6px",
+                    borderRadius: 4,
+                    cursor: "pointer",
+                    fontSize: 12,
+                    transition: "background 0.2s"
                   }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = token.colorFillAlter}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                 >
                   <span style={{ color: token.colorText, fontWeight: 600 }}>{item.symbol}/USD</span>
-                  <div style={{ display: "flex", gap: 12 }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                     <span style={{ color: token.colorText }}>{item.last}</span>
                     <span style={{ color: item.isDown ? token.colorError : token.colorSuccess, fontWeight: 600 }}>{item.change}</span>
                   </div>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>
