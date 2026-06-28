@@ -134,7 +134,7 @@ export const CryptoDetailPage: React.FC = () => {
   const watchlist = useMemo(() => {
     if (filter === "trending") {
       if (!trendingData || trendingData.length === 0) {
-        return Array.from({ length: 10 }).map((_, idx) => ({
+        return Array.from({ length: 15 }).map((_, idx) => ({
           id: `loading-${idx}`,
           symbol: "...",
           last: "-",
@@ -143,7 +143,7 @@ export const CryptoDetailPage: React.FC = () => {
           image: ""
         }));
       }
-      return trendingData.slice(0, 10).map((coin: any) => {
+      return trendingData.slice(0, 15).map((coin: any) => {
         const item = coin.item;
         const changePercent = item.data?.price_change_percentage_24h?.usd || 0;
         return {
@@ -158,7 +158,7 @@ export const CryptoDetailPage: React.FC = () => {
     }
 
     if (watchlistCoins.length === 0) {
-      return Array.from({ length: 10 }).map((_, idx) => ({
+      return Array.from({ length: 15 }).map((_, idx) => ({
         id: `loading-${idx}`,
         symbol: "...",
         last: "-",
@@ -179,7 +179,7 @@ export const CryptoDetailPage: React.FC = () => {
         .sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h);
     }
 
-    return sortedList.slice(0, 10).map((coin: any) => ({
+    return sortedList.slice(0, 15).map((coin: any) => ({
       id: coin.id,
       symbol: coin.symbol.toUpperCase(),
       last: coin.current_price !== undefined && coin.current_price !== null 
