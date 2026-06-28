@@ -392,10 +392,17 @@ export const CryptoDetailPage: React.FC = () => {
             }}>
               {(["rank", "trending", "gainers", "losers"] as const).map((t) => {
                 const isActive = filter === t;
+                const filterTitles = {
+                  rank: "Market Cap Rank",
+                  trending: "Top Search Trending Coins",
+                  gainers: "Top 24h Price Gainers",
+                  losers: "Top 24h Price Losers"
+                };
                 return (
                   <span
                     key={t}
                     onClick={() => setFilter(t)}
+                    title={filterTitles[t]}
                     style={{
                       fontSize: 10,
                       fontWeight: 700,
@@ -414,6 +421,27 @@ export const CryptoDetailPage: React.FC = () => {
                 );
               })}
             </div>
+            
+            {/* Column Names Header Row */}
+            <div style={{ 
+              display: "flex", 
+              justifyContent: "space-between", 
+              padding: "2px 6px 6px 6px", 
+              fontSize: 9, 
+              fontWeight: 700, 
+              color: token.colorTextDescription, 
+              textTransform: "uppercase", 
+              letterSpacing: "0.05em",
+              borderBottom: `1px solid ${token.colorBorderSecondary}`,
+              marginBottom: 4
+            }}>
+              <span>Ticker</span>
+              <div style={{ display: "flex", gap: 36, paddingRight: 4 }}>
+                <span>Last</span>
+                <span style={{ minWidth: 42, textAlign: "right" }}>Chg %</span>
+              </div>
+            </div>
+
             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
               {watchlist.map((item) => (
                 <div
