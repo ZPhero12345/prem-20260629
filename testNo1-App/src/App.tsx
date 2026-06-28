@@ -36,7 +36,7 @@ function MainAppContent() {
   const location = useLocation();
   const isCoinDetail = location.pathname.startsWith("/coin");
   const [selectedRange] = useState(7);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [_isSearchFocused, setIsSearchFocused] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Fetch trending coins

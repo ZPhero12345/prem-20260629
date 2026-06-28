@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from "react";
-import { Typography, Button, Card, Col, Row, Statistic, theme, Tooltip as AntTooltip } from "antd";
+import { Typography, Button, Card, Col, Row, Statistic, theme } from "antd";
 import {
   StarOutlined,
   StarFilled

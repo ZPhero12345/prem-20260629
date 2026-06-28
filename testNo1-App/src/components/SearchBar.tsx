@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AutoComplete, Input, Spin, theme } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { searchCoins } from "../utils/api";
+import { searchCoins, initializeCoinsCache } from "../utils/api";
 import type { SearchResult, TrendingCoin } from "../utils/api";
 
 interface SearchBarProps {
@@ -16,6 +16,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStat
   const [options, setOptions] = useState<{ value: string; label: React.ReactNode }[]>([]);
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef<number | null>(null);
+
+  // Initialize background cache for typo-tolerant searches
+  useEffect(() => {
+    initializeCoinsCache();
+  }, []);
 
   // Helper to map and show trending suggestions when search query is empty
   const showDefaultSuggestions = useCallback(() => {
@@ -70,11 +75,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStat
           label: (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 8px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <img src={coin.thumb} alt={coin.name} style={{ width: 20, height: 20, borderRadius: "50%" }} />
+                {coin.thumb && coin.thumb.startsWith("http") ? (
+                  <img src={coin.thumb} alt={coin.name} style={{ width: 20, height: 20, borderRadius: "50%" }} />
+                ) : (
+                  // Empty space wrapper to align text nicely if image is absent
+                  <div style={{ width: 20, height: 20 }} />
+                )}
                 <span style={{ fontWeight: 500 }}>{coin.name}</span>
                 <span style={{ color: "#8b90a0", fontSize: 12 }}>{coin.symbol.toUpperCase()}</span>
               </div>
-              <span style={{ fontSize: 11, color: "#8b90a0" }}>#{coin.market_cap_rank || "N/A"}</span>
+              {coin.market_cap_rank && coin.market_cap_rank !== 9999 ? (
+                <span style={{ fontSize: 11, color: "#8b90a0" }}>#{coin.market_cap_rank}</span>
+              ) : null}
             </div>
           ),
         }));

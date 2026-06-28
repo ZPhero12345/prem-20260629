@@ -121,6 +121,104 @@ export async function fetchTrendingCoins(): Promise<TrendingCoin[]> {
   return data.coins;
 }
 
+const FULL_COINS_CACHE_KEY = "cryptometric_full_coins";
+const FULL_COINS_CACHE_TIME_KEY = "cryptometric_full_coins_time";
+const CACHE_24H_MS = 24 * 60 * 60 * 1000;
+
+export async function initializeCoinsCache(): Promise<void> {
+  const now = Date.now();
+  const cachedTime = localStorage.getItem(FULL_COINS_CACHE_TIME_KEY);
+  const cachedData = localStorage.getItem(FULL_COINS_CACHE_KEY);
+
+  if (cachedData && cachedTime && now - parseInt(cachedTime, 10) < CACHE_24H_MS) {
+    return; // Cache is still fresh
+  }
+
+  try {
+    const res = await fetchFromApi("/coins/list");
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem(FULL_COINS_CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(FULL_COINS_CACHE_TIME_KEY, now.toString());
+    }
+  } catch (err) {
+    console.warn("Failed to background-initialize coins cache:", err);
+  }
+}
+
+function calculateLevenshtein(a: string, b: string): number {
+  const matrix: number[][] = [];
+  for (let i = 0; i <= a.length; i++) matrix[i] = [i];
+  for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+  }
+  return matrix[a.length][b.length];
+}
+
+function localFuzzySearch(query: string): SearchResult[] {
+  const cachedData = localStorage.getItem(FULL_COINS_CACHE_KEY);
+  if (!cachedData) return [];
+
+  try {
+    const coins: { id: string; name: string; symbol: string }[] = JSON.parse(cachedData);
+    const trimmed = query.trim().toLowerCase();
+    const matches: { coin: SearchResult; score: number }[] = [];
+
+    for (const coin of coins) {
+      const name = coin.name.toLowerCase();
+      const symbol = coin.symbol.toLowerCase();
+
+      let matched = false;
+      let score = 999;
+
+      if (symbol === trimmed || name === trimmed) {
+        matched = true;
+        score = 0;
+      } else if (symbol.startsWith(trimmed) || name.startsWith(trimmed)) {
+        matched = true;
+        score = 1;
+      } else {
+        const distName = calculateLevenshtein(trimmed, name);
+        const distSym = calculateLevenshtein(trimmed, symbol);
+        const minDist = Math.min(distName, distSym);
+
+        const maxAllowedDist = trimmed.length <= 4 ? 1 : trimmed.length <= 7 ? 2 : 3;
+        if (minDist <= maxAllowedDist) {
+          matched = true;
+          score = minDist + 2;
+        }
+      }
+
+      if (matched) {
+        matches.push({
+          coin: {
+            id: coin.id,
+            name: coin.name,
+            symbol: coin.symbol,
+            market_cap_rank: 9999,
+            thumb: ""
+          },
+          score
+        });
+      }
+    }
+
+    matches.sort((a, b) => a.score - b.score);
+    return matches.slice(0, 10).map(m => m.coin);
+  } catch (err) {
+    console.error("Failed to parse local coins search index:", err);
+    return [];
+  }
+}
+
 const searchQueryCache: Record<string, { timestamp: number; data: SearchResult[] }> = {};
 
 export async function searchCoins(query: string): Promise<SearchResult[]> {
@@ -132,38 +230,54 @@ export async function searchCoins(query: string): Promise<SearchResult[]> {
     return searchQueryCache[trimmed].data;
   }
 
-  const response = await fetchFromApi(`/search?query=${encodeURIComponent(query)}`);
-  if (!response.ok) {
-    throw new Error(`CoinGecko Search API error: ${response.status} ${response.statusText}`);
+  let results: SearchResult[] = [];
+  let isApiSuccess = false;
+
+  try {
+    const response = await fetchFromApi(`/search?query=${encodeURIComponent(query)}`);
+    if (response.ok) {
+      const data = await response.json();
+      results = data.coins || [];
+      isApiSuccess = true;
+    }
+  } catch (err) {
+    console.warn("CoinGecko search API failed or rate-limited:", err);
   }
-  const data = await response.json();
-  const results: SearchResult[] = data.coins || [];
 
-  // Sort exact matches on symbol or name to the top of suggestions
-  results.sort((a, b) => {
-    const aSym = a.symbol.toLowerCase();
-    const bSym = b.symbol.toLowerCase();
-    const aName = a.name.toLowerCase();
-    const bName = b.name.toLowerCase();
+  // Evaluate if the API returned exact or prefix matches
+  const hasGoodMatches = isApiSuccess && results.some(coin => 
+    coin.symbol.toLowerCase().startsWith(trimmed) || 
+    coin.name.toLowerCase().startsWith(trimmed)
+  );
 
-    // 1. Exact symbol match
-    if (aSym === trimmed && bSym !== trimmed) return -1;
-    if (bSym === trimmed && aSym !== trimmed) return 1;
+  let finalResults: SearchResult[] = [];
 
-    // 2. Exact name match
-    if (aName === trimmed && bName !== trimmed) return -1;
-    if (bName === trimmed && aName !== trimmed) return 1;
+  if (hasGoodMatches) {
+    // Sort exact matches on symbol or name to the top of suggestions
+    results.sort((a, b) => {
+      const aSym = a.symbol.toLowerCase();
+      const bSym = b.symbol.toLowerCase();
+      const aName = a.name.toLowerCase();
+      const bName = b.name.toLowerCase();
 
-    return 0;
-  });
+      if (aSym === trimmed && bSym !== trimmed) return -1;
+      if (bSym === trimmed && aSym !== trimmed) return 1;
+      if (aName === trimmed && bName !== trimmed) return -1;
+      if (bName === trimmed && aName !== trimmed) return 1;
+      return 0;
+    });
+    finalResults = results.slice(0, 10);
+  } else {
+    // If API failed, returned empty, or had no good prefix/exact matches (e.g. typos), use local index
+    finalResults = localFuzzySearch(trimmed);
+  }
 
-  const slicedResults = results.slice(0, 10);
   searchQueryCache[trimmed] = {
     timestamp: now,
-    data: slicedResults
+    data: finalResults
   };
 
-  return slicedResults;
+  return finalResults;
 }
 
 function formatLargeNumber(num: number): string {
