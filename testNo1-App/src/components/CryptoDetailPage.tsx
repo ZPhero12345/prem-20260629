@@ -380,7 +380,7 @@ export const CryptoDetailPage: React.FC = () => {
           </div>
 
           {/* Quick Watchlist Section */}
-          <div>
+          <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
             <div style={{ 
               display: "flex", 
               justifyContent: "space-between", 
@@ -449,7 +449,7 @@ export const CryptoDetailPage: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <div className="watchlist-scroll-container" style={{ display: "flex", flexDirection: "column", gap: 1 }}>
               {watchlist.map((item) => (
                 <div
                   key={item.id}

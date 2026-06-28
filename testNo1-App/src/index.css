@@ -34,8 +34,34 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
   box-sizing: border-box;
+}
+
+.watchlist-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-right: -4px;
+}
+
+/* Custom scrollbar specifically for the watchlist container */
+.watchlist-scroll-container::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.watchlist-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.watchlist-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.watchlist-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 @media (max-width: 992px) {
