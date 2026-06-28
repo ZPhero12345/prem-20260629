@@ -130,7 +130,8 @@ export const CryptoDetailPage: React.FC = () => {
         symbol: "...",
         last: "-",
         change: "0.00%",
-        isDown: false
+        isDown: false,
+        image: ""
       }));
     }
     return watchlistCoins.map((coin: any) => ({
@@ -142,7 +143,8 @@ export const CryptoDetailPage: React.FC = () => {
       change: coin.price_change_percentage_24h !== undefined && coin.price_change_percentage_24h !== null
         ? `${coin.price_change_percentage_24h >= 0 ? "+" : ""}${coin.price_change_percentage_24h.toFixed(2)}%`
         : "0.00%",
-      isDown: (coin.price_change_percentage_24h || 0) < 0
+      isDown: (coin.price_change_percentage_24h || 0) < 0,
+      image: coin.image || ""
     }));
   }, [watchlistCoins]);
 
@@ -368,7 +370,14 @@ export const CryptoDetailPage: React.FC = () => {
                   }}
                   onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                 >
-                  <span style={{ color: token.colorText, fontWeight: 600 }}>{item.symbol}/USD</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {item.image ? (
+                      <img src={item.image} alt={item.symbol} style={{ width: 16, height: 16, borderRadius: "50%" }} />
+                    ) : (
+                      <div style={{ width: 16, height: 16, borderRadius: "50%", background: token.colorBorderSecondary }} />
+                    )}
+                    <span style={{ color: token.colorText, fontWeight: 600 }}>{item.symbol}/USD</span>
+                  </div>
                   <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                     <span style={{ color: token.colorText }}>{item.last}</span>
                     <span style={{ color: item.isDown ? token.colorError : token.colorSuccess, fontWeight: 600 }}>{item.change}</span>
