@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchCoinData, fetchCoinsByIds } from "../utils/api";
+import { fetchCoinData, fetchMarketCoins } from "../utils/api";
 import { CandlestickChart } from "./CandlestickChart";
 
 import type { UTCTimestamp } from "lightweight-charts";
@@ -33,10 +33,10 @@ export const CryptoDetailPage: React.FC = () => {
     retryDelay: (attempt) => Math.min(attempt * 5000, 30000),
   });
 
-  // Query watchlist coins live prices dynamically for only the 4 target coins
+  // Query watchlist coins live prices dynamically (top 10 by market cap rank)
   const { data: watchlistCoins = [] } = useQuery({
     queryKey: ["watchlistCoinsData"],
-    queryFn: () => fetchCoinsByIds("bitcoin,ethereum,solana,chainlink"),
+    queryFn: () => fetchMarketCoins(undefined, 10),
     staleTime: 30000,
   });
 
@@ -121,34 +121,29 @@ export const CryptoDetailPage: React.FC = () => {
     };
   }, [candlestickData]);
 
-  // Sidebar watchlists dynamically populated from live market query
+  // Sidebar watchlists dynamically populated from live market query (top 10 by market cap rank)
   const watchlist = useMemo(() => {
-    const targets = ["bitcoin", "ethereum", "solana", "chainlink"];
-    // Keep order consistent: BTC, ETH, SOL, LINK
-    const coinMap: Record<string, any> = {};
-    watchlistCoins.forEach((coin: any) => {
-      coinMap[coin.id] = coin;
-    });
-
-    return targets.map((id) => {
-      const coin = coinMap[id];
-      if (!coin) {
-        // Safe placeholder before loading completes
-        const symbolMap: Record<string, string> = { bitcoin: "BTC", ethereum: "ETH", solana: "SOL", chainlink: "LINK" };
-        return {
-          symbol: symbolMap[id] || id.toUpperCase(),
-          last: "-",
-          change: "0.00%",
-          isDown: false
-        };
-      }
-      return {
-        symbol: coin.symbol.toUpperCase(),
-        last: `$${coin.current_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-        change: `${coin.price_change_percentage_24h >= 0 ? "+" : ""}${coin.price_change_percentage_24h?.toFixed(2)}%`,
-        isDown: coin.price_change_percentage_24h < 0
-      };
-    });
+    if (watchlistCoins.length === 0) {
+      // Safe placeholder before loading completes
+      return Array.from({ length: 10 }).map((_, idx) => ({
+        id: `loading-${idx}`,
+        symbol: "...",
+        last: "-",
+        change: "0.00%",
+        isDown: false
+      }));
+    }
+    return watchlistCoins.map((coin: any) => ({
+      id: coin.id,
+      symbol: coin.symbol.toUpperCase(),
+      last: coin.current_price !== undefined && coin.current_price !== null 
+        ? `$${coin.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : "-",
+      change: coin.price_change_percentage_24h !== undefined && coin.price_change_percentage_24h !== null
+        ? `${coin.price_change_percentage_24h >= 0 ? "+" : ""}${coin.price_change_percentage_24h.toFixed(2)}%`
+        : "0.00%",
+      isDown: (coin.price_change_percentage_24h || 0) < 0
+    }));
   }, [watchlistCoins]);
 
 
@@ -354,19 +349,23 @@ export const CryptoDetailPage: React.FC = () => {
             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
               {watchlist.map((item) => (
                 <div
-                  key={item.symbol}
-                  onClick={() => navigate(`/coin/${item.symbol.toLowerCase() === 'btc' ? 'bitcoin' : item.symbol.toLowerCase() === 'eth' ? 'ethereum' : item.symbol.toLowerCase() === 'sol' ? 'solana' : 'chainlink'}`)}
+                  key={item.id}
+                  onClick={() => item.id && !item.id.startsWith("loading-") && navigate(`/coin/${item.id}`)}
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                     padding: "5px 6px",
                     borderRadius: 4,
-                    cursor: "pointer",
+                    cursor: item.id && !item.id.startsWith("loading-") ? "pointer" : "default",
                     fontSize: 12,
                     transition: "background 0.2s"
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = token.colorFillAlter}
+                  onMouseEnter={(e) => {
+                    if (item.id && !item.id.startsWith("loading-")) {
+                      e.currentTarget.style.background = token.colorFillAlter;
+                    }
+                  }}
                   onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                 >
                   <span style={{ color: token.colorText, fontWeight: 600 }}>{item.symbol}/USD</span>
