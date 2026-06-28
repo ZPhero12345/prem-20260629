@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from "react";
-import { Typography, Button, theme } from "antd";
+import { Typography, Button, theme, Tooltip } from "antd";
 import {
   StarOutlined,
   StarFilled
@@ -399,25 +399,32 @@ export const CryptoDetailPage: React.FC = () => {
                   losers: "Top 24h Price Losers"
                 };
                 return (
-                  <span
+                  <Tooltip 
                     key={t}
-                    onClick={() => setFilter(t)}
-                    title={filterTitles[t]}
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.03em",
-                      cursor: "pointer",
-                      color: isActive ? token.colorText : token.colorTextDescription,
-                      transition: "color 0.2s",
-                      borderBottom: isActive ? `1.5px solid ${token.colorLink || "#1677ff"}` : "none",
-                      paddingBottom: 5,
-                      marginBottom: isActive ? -6 : 0
-                    }}
+                    title={filterTitles[t]} 
+                    color="#1e222d" 
+                    overlayInnerStyle={{ fontSize: 10, fontWeight: 600, padding: "4px 8px", borderRadius: 4 }}
+                    mouseEnterDelay={0.3}
                   >
-                    {t}
-                  </span>
+                    <span
+                      onClick={() => setFilter(t)}
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.03em",
+                        cursor: "pointer",
+                        color: isActive ? token.colorText : token.colorTextDescription,
+                        transition: "color 0.2s",
+                        borderBottom: isActive ? `1.5px solid ${token.colorLink || "#1677ff"}` : "none",
+                        paddingBottom: 5,
+                        marginBottom: isActive ? -6 : 0,
+                        display: "inline-block"
+                      }}
+                    >
+                      {t}
+                    </span>
+                  </Tooltip>
                 );
               })}
             </div>
