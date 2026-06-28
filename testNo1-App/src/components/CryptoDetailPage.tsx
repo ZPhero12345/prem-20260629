@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchCoinData } from "../utils/api";
+import { fetchCoinData, fetchMarketCoins } from "../utils/api";
 import { CandlestickChart } from "./CandlestickChart";
 
 import type { UTCTimestamp } from "lightweight-charts";
@@ -31,6 +31,13 @@ export const CryptoDetailPage: React.FC = () => {
     staleTime: 30000,
     retry: true,
     retryDelay: (attempt) => Math.min(attempt * 5000, 30000),
+  });
+
+  // Query watchlist coins live prices dynamically
+  const { data: watchlistCoins = [] } = useQuery({
+    queryKey: ["watchlistCoinsData"],
+    queryFn: () => fetchMarketCoins(undefined, 10),
+    staleTime: 30000,
   });
 
   // Fetch public corporate holdings dynamically (commented out for now)
@@ -114,13 +121,35 @@ export const CryptoDetailPage: React.FC = () => {
     };
   }, [candlestickData]);
 
-  // Sidebar watchlists
-  const watchlist = [
-    { symbol: "BTC", last: "$64,210.50", change: "+2.45%", isDown: false },
-    { symbol: "ETH", last: "$3,452.12", change: "+1.82%", isDown: false },
-    { symbol: "SOL", last: "$142.85", change: "-0.92%", isDown: true },
-    { symbol: "LINK", last: "$18.42", change: "+5.10%", isDown: false },
-  ];
+  // Sidebar watchlists dynamically populated from live market query
+  const watchlist = useMemo(() => {
+    const targets = ["bitcoin", "ethereum", "solana", "chainlink"];
+    // Keep order consistent: BTC, ETH, SOL, LINK
+    const coinMap: Record<string, any> = {};
+    watchlistCoins.forEach((coin: any) => {
+      coinMap[coin.id] = coin;
+    });
+
+    return targets.map((id) => {
+      const coin = coinMap[id];
+      if (!coin) {
+        // Safe placeholder before loading completes
+        const symbolMap: Record<string, string> = { bitcoin: "BTC", ethereum: "ETH", solana: "SOL", chainlink: "LINK" };
+        return {
+          symbol: symbolMap[id] || id.toUpperCase(),
+          last: "-",
+          change: "0.00%",
+          isDown: false
+        };
+      }
+      return {
+        symbol: coin.symbol.toUpperCase(),
+        last: `$${coin.current_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        change: `${coin.price_change_percentage_24h >= 0 ? "+" : ""}${coin.price_change_percentage_24h?.toFixed(2)}%`,
+        isDown: coin.price_change_percentage_24h < 0
+      };
+    });
+  }, [watchlistCoins]);
 
 
 
