@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Card, Typography, Row, Col, Table, theme, Segmented, Spin, Button } from "antd";
+import { Card, Typography, Row, Col, Table, theme, Segmented, Button } from "antd";
 import { StarFilled, StarOutlined, GlobalOutlined } from "@ant-design/icons";
 import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useQuery } from "@tanstack/react-query";
-import { fetchMarketCoins, fetchPublicTreasury } from "../utils/api";
+import { fetchMarketCoins } from "../utils/api";
 import type { GlobalStats } from "../utils/api";
 
 const { Title, Text } = Typography;
@@ -45,13 +45,7 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
     retry: 1
   });
 
-  // Query corporate holdings (public treasury)
-  const { data: treasuryData, isLoading: treasuryLoading, isError: treasuryError, refetch: refetchTreasury } = useQuery({
-    queryKey: ["publicTreasury"],
-    queryFn: fetchPublicTreasury,
-    staleTime: 10 * 60 * 1000,
-    retry: 1
-  });
+
 
   const tableData = marketCoins.map((coin: any, idx: number) => ({
     key: (idx + 1).toString(),
@@ -485,69 +479,7 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
         </Card>
 
 
-        {/* Bitcoin Corporate Holdings Card */}
-        <Card
-          title={
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <GlobalOutlined style={{ color: "#ff6b35" }} />
-              <span style={{ color: token.colorText, fontSize: 14, fontWeight: 700 }}>Bitcoin Corporate Holdings</span>
-            </div>
-          }
-          style={{
-            background: token.colorBgContainer,
-            border: `1px solid ${token.colorBorderSecondary}`,
-            borderRadius: 8,
-            marginTop: 24,
-            transition: "background 0.3s, border-color 0.3s"
-          }}
-          styles={{ body: { padding: treasuryError ? "24px" : 0 } }}
-        >
-          {treasuryError ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 12px", gap: 12 }}>
-              <Text type="secondary" style={{ fontSize: 13 }}>Failed to load treasury data.</Text>
-              <Button onClick={() => refetchTreasury()} size="small" type="primary">Reload</Button>
-            </div>
-          ) : treasuryLoading ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: 24 }}>
-              <Spin size="small" />
-            </div>
-          ) : (
-            <Table
-              dataSource={treasuryData?.companies?.slice(0, 5) || []}
-              pagination={false}
-              size="small"
-              showHeader={true}
-              rowKey="name"
-              columns={[
-                {
-                  title: "Company",
-                  dataIndex: "name",
-                  key: "name",
-                  render: (name, record) => (
-                    <div>
-                      <Text style={{ color: token.colorText, fontWeight: 600, display: "block" }}>{name}</Text>
-                      <Text type="secondary" style={{ fontSize: 10 }}>{record.symbol} • {record.country}</Text>
-                    </div>
-                  )
-                },
-                {
-                  title: "Holdings",
-                  dataIndex: "total_holdings",
-                  key: "total_holdings",
-                  align: "right",
-                  render: (val) => <Text style={{ color: token.colorText, fontWeight: 600 }}>{val.toLocaleString()} BTC</Text>
-                },
-                {
-                  title: "Value",
-                  dataIndex: "total_current_value_usd",
-                  key: "total_current_value_usd",
-                  align: "right",
-                  render: (val) => <Text style={{ color: token.colorText }}>${(val / 1e6).toFixed(1)}M</Text>
-                }
-              ]}
-            />
-          )}
-        </Card>
+
       </Col>
     </Row>
   );

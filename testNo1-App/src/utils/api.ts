@@ -455,8 +455,8 @@ export async function fetchGlobalStats(): Promise<GlobalStats> {
   return data.data;
 }
 
-export async function fetchPublicTreasury(): Promise<PublicTreasuryData> {
-  const response = await fetchFromApi("/companies/public_treasury/bitcoin");
+export async function fetchPublicTreasury(coinId: string): Promise<PublicTreasuryData> {
+  const response = await fetchFromApi(`/companies/public_treasury/${coinId}`);
   if (!response.ok) {
     throw new Error(`CoinGecko Treasury API error: ${response.status} ${response.statusText}`);
   }
