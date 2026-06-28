@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchCoinData, fetchMarketCoins } from "../utils/api";
+import { fetchCoinData, fetchCoinsByIds } from "../utils/api";
 import { CandlestickChart } from "./CandlestickChart";
 
 import type { UTCTimestamp } from "lightweight-charts";
@@ -33,10 +33,10 @@ export const CryptoDetailPage: React.FC = () => {
     retryDelay: (attempt) => Math.min(attempt * 5000, 30000),
   });
 
-  // Query watchlist coins live prices dynamically
+  // Query watchlist coins live prices dynamically for only the 4 target coins
   const { data: watchlistCoins = [] } = useQuery({
     queryKey: ["watchlistCoinsData"],
-    queryFn: () => fetchMarketCoins(undefined, 10),
+    queryFn: () => fetchCoinsByIds("bitcoin,ethereum,solana,chainlink"),
     staleTime: 30000,
   });
 
