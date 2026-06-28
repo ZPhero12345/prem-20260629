@@ -472,10 +472,3 @@ export async function fetchMarketCoins(category?: string, perPage: number = 6): 
   return response.json();
 }
 
-export async function fetchCoinsByIds(ids: string): Promise<any[]> {
-  const response = await fetchFromApi(`/coins/markets?vs_currency=usd&ids=${ids}`);
-  if (!response.ok) {
-    throw new Error(`CoinGecko markets by IDs API error: ${response.status} ${response.statusText}`);
-  }
-  return response.json();
-}
