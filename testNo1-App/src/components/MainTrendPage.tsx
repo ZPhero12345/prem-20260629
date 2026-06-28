@@ -66,15 +66,30 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
   const totalMarketCap = globalStats?.total_market_cap?.usd || 0;
   const totalVolume24h = globalStats?.total_volume?.usd || 0;
 
+  // Load and parse popular coins cache from local storage
+  const popularData = localStorage.getItem("cryptometric_popular_coins");
+  const popularMap: Record<string, { rank: number; thumb: string }> = popularData ? JSON.parse(popularData) : {};
+
+  // Resolve logo thumbnails dynamically with static fallback
+  const btcLogo = popularMap["bitcoin"]?.thumb || "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400";
+  const ethLogo = popularMap["ethereum"]?.thumb || "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png?1696501484";
+  const usdtLogo = popularMap["tether"]?.thumb || "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501494";
+
+  // Altcoins for the "Others" category stack
+  const bnbLogo = popularMap["binancecoin"]?.thumb || "https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1696501867";
+  const usdcLogo = popularMap["usd-coin"]?.thumb || "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694";
+  const xrpLogo = popularMap["ripple"]?.thumb || "https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png?1696501358";
+  const solLogo = popularMap["solana"]?.thumb || "https://coin-images.coingecko.com/coins/images/4128/large/solana.png?1696504756";
+
   const btcShare = globalStats?.market_cap_percentage?.btc || 0;
   const ethShare = globalStats?.market_cap_percentage?.eth || 0;
   const usdtShare = globalStats?.market_cap_percentage?.usdt || 0;
   const othersShare = Math.max(0, 100 - btcShare - ethShare - usdtShare);
 
   const pieData = [
-    { name: "BTC", value: btcShare, valUsd: totalMarketCap * (btcShare / 100), color: "#f7931a", id: "bitcoin", fullName: "Bitcoin", logo: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400" },
-    { name: "ETH", value: ethShare, valUsd: totalMarketCap * (ethShare / 100), color: "#627eea", id: "ethereum", fullName: "Ethereum", logo: "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png?1696501484" },
-    { name: "USDT", value: usdtShare, valUsd: totalMarketCap * (usdtShare / 100), color: "#26a17b", id: "tether", fullName: "Tether (USDT)", logo: "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501494" },
+    { name: "BTC", value: btcShare, valUsd: totalMarketCap * (btcShare / 100), color: "#f7931a", id: "bitcoin", fullName: "Bitcoin", logo: btcLogo },
+    { name: "ETH", value: ethShare, valUsd: totalMarketCap * (ethShare / 100), color: "#627eea", id: "ethereum", fullName: "Ethereum", logo: ethLogo },
+    { name: "USDT", value: usdtShare, valUsd: totalMarketCap * (usdtShare / 100), color: "#26a17b", id: "tether", fullName: "Tether (USDT)", logo: usdtLogo },
     { name: "Others", value: othersShare, valUsd: totalMarketCap * (othersShare / 100), color: "#8b90a0", fullName: "Others", logo: "" }
   ];
 
@@ -208,10 +223,10 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
                         />
                       ) : pieData[activeIndex].name === "Others" ? (
                         <div style={{ display: "flex", alignItems: "center", position: "relative", width: 50, height: 22, marginBottom: 2 }}>
-                          <img src="https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1696501867" alt="BNB" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 0, zIndex: 4 }} />
-                          <img src="https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694" alt="USDC" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 10, zIndex: 3 }} />
-                          <img src="https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png?1696501358" alt="XRP" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 20, zIndex: 2 }} />
-                          <img src="https://coin-images.coingecko.com/coins/images/4128/large/solana.png?1696504756" alt="SOL" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 30, zIndex: 1 }} />
+                          <img src={bnbLogo} alt="BNB" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 0, zIndex: 4 }} />
+                          <img src={usdcLogo} alt="USDC" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 10, zIndex: 3 }} />
+                          <img src={xrpLogo} alt="XRP" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 20, zIndex: 2 }} />
+                          <img src={solLogo} alt="SOL" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 30, zIndex: 1 }} />
                         </div>
                       ) : (
                         <div style={{ width: 22, height: 22, borderRadius: "50%", background: pieData[activeIndex].color, marginBottom: 2 }} />
@@ -271,10 +286,10 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
                           <img src={item.logo} alt={item.fullName} style={{ width: 16, height: 16, borderRadius: "50%" }} />
                         ) : item.name === "Others" ? (
                           <div style={{ display: "flex", alignItems: "center", position: "relative", width: 34, height: 16 }}>
-                            <img src="https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1696501867" alt="BNB" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 0, zIndex: 4 }} />
-                            <img src="https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694" alt="USDC" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 7, zIndex: 3 }} />
-                            <img src="https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png?1696501358" alt="XRP" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 14, zIndex: 2 }} />
-                            <img src="https://coin-images.coingecko.com/coins/images/4128/large/solana.png?1696504756" alt="SOL" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 21, zIndex: 1 }} />
+                            <img src={bnbLogo} alt="BNB" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 0, zIndex: 4 }} />
+                            <img src={usdcLogo} alt="USDC" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 7, zIndex: 3 }} />
+                            <img src={xrpLogo} alt="XRP" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 14, zIndex: 2 }} />
+                            <img src={solLogo} alt="SOL" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 21, zIndex: 1 }} />
                           </div>
                         ) : (
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: item.color, display: "inline-block" }} />
