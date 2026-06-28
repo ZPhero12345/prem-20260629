@@ -23,7 +23,7 @@ function MainAppContent() {
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Fetch global crypto stats
-  const { data: globalStats } = useQuery({
+  const { data: globalStats, isError: globalError, refetch: refetchGlobal } = useQuery({
     queryKey: ["globalStats"],
     queryFn: fetchGlobalStats,
     staleTime: 5 * 60 * 1000,
@@ -157,6 +157,8 @@ function MainAppContent() {
               {/* Main Trend Dashboard Content */}
               <MainTrendPage
                 globalStats={globalStats}
+                globalError={globalError}
+                onReloadGlobal={refetchGlobal}
                 loading={trendingLoading}
                 onSelectAsset={(id) => navigate(`/coin/${id}`)}
               />

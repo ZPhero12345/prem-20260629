@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, Typography, Row, Col, Table, theme, Segmented, Spin } from "antd";
+import { Card, Typography, Row, Col, Table, theme, Segmented, Spin, Button } from "antd";
 import { StarFilled, StarOutlined, GlobalOutlined } from "@ant-design/icons";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
@@ -12,12 +12,16 @@ interface MainTrendPageProps {
   loading: boolean;
   onSelectAsset: (id: string) => void;
   globalStats?: GlobalStats;
+  globalError?: boolean;
+  onReloadGlobal?: () => void;
 }
 
 export const MainTrendPage: React.FC<MainTrendPageProps> = ({
   loading: _loading,
   onSelectAsset,
-  globalStats
+  globalStats,
+  globalError,
+  onReloadGlobal
 }) => {
   const { token } = theme.useToken();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -34,7 +38,7 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   // Query category-filtered coins
-  const { data: marketCoins = [], isLoading: marketLoading } = useQuery({
+  const { data: marketCoins = [], isLoading: marketLoading, isError: marketError, refetch: refetchMarket } = useQuery({
     queryKey: ["marketCoins", selectedCategory],
     queryFn: () => fetchMarketCoins(selectedCategory || undefined, 6),
     staleTime: 30000,
@@ -42,31 +46,22 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
   });
 
   // Query corporate holdings (public treasury)
-  const { data: treasuryData, isLoading: treasuryLoading } = useQuery({
+  const { data: treasuryData, isLoading: treasuryLoading, isError: treasuryError, refetch: refetchTreasury } = useQuery({
     queryKey: ["publicTreasury"],
     queryFn: fetchPublicTreasury,
     staleTime: 10 * 60 * 1000,
     retry: 1
   });
 
-  const tableData = marketCoins.length > 0
-    ? marketCoins.map((coin: any, idx: number) => ({
-        key: (idx + 1).toString(),
-        id: coin.id,
-        symbol: coin.symbol.toUpperCase(),
-        name: coin.name,
-        price: coin.current_price || 0,
-        change: coin.price_change_percentage_24h || 0,
-        image: coin.image
-      }))
-    : [
-        { key: "1", id: "avalanche-2", symbol: "AVAX", name: "AVAX", price: 38.92, change: -4.21, image: "https://coin-images.coingecko.com/coins/images/825/large/AVAX.png?1696501867" },
-        { key: "2", id: "matic-network", symbol: "MATIC", name: "MATIC", price: 92.68, change: 7.84, image: "https://coin-images.coingecko.com/coins/images/4713/large/polygon.png?1698233740" },
-        { key: "3", id: "oasis-network", symbol: "ROSE", name: "ROSE", price: 8.33, change: 1.02, image: "https://coin-images.coingecko.com/coins/images/13162/large/rose.png?1696512918" },
-        { key: "4", id: "decred", symbol: "DCR", name: "DCR", price: 45.69, change: -17.88, image: "https://coin-images.coingecko.com/coins/images/329/large/decred.png?1696501499" },
-        { key: "5", id: "cardano", symbol: "ADA", name: "ADA", price: 0.435, change: 5.21, image: "https://coin-images.coingecko.com/coins/images/975/large/cardano.png?1696502090" },
-        { key: "6", id: "solana", symbol: "SOL", name: "SOL", price: 145.30, change: -2.37, image: "https://coin-images.coingecko.com/coins/images/4128/large/solana.png?1696504756" }
-      ];
+  const tableData = marketCoins.map((coin: any, idx: number) => ({
+    key: (idx + 1).toString(),
+    id: coin.id,
+    symbol: coin.symbol.toUpperCase(),
+    name: coin.name,
+    price: coin.current_price || 0,
+    change: coin.price_change_percentage_24h || 0,
+    image: coin.image
+  }));
 
   const totalMarketCap = globalStats?.total_market_cap?.usd || 0;
   const totalVolume24h = globalStats?.total_volume?.usd || 0;
@@ -120,8 +115,14 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
             transition: "background 0.3s, border-color 0.3s"
           }}
         >
-          <Row gutter={[24, 24]} align="middle">
-            <Col xs={24} md={12}>
+          {globalError ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 260, gap: 12 }}>
+              <Text type="secondary" style={{ fontSize: 13 }}>Failed to load market dominance stats.</Text>
+              <Button onClick={() => onReloadGlobal?.()} type="primary" size="small">Reload</Button>
+            </div>
+          ) : (
+            <Row gutter={[24, 24]} align="middle">
+              <Col xs={24} md={12}>
               {/* Donut Chart Container */}
               <div style={{ height: 260, position: "relative" }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -266,6 +267,7 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
               </div>
             </Col>
           </Row>
+          )}
         </Card>
       </Col>
 
@@ -281,9 +283,16 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
             marginBottom: 24,
             transition: "background 0.3s, border-color 0.3s"
           }}
-          styles={{ body: { padding: "12px 0 0 0" } }}
+          styles={{ body: { padding: marketError ? "24px" : "12px 0 0 0" } }}
         >
-          <div style={{ padding: "0 12px 12px 12px" }}>
+          {marketError ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 12px", gap: 12 }}>
+              <Text type="secondary" style={{ fontSize: 13 }}>Failed to load coin pairs.</Text>
+              <Button onClick={() => refetchMarket()} size="small" type="primary">Reload</Button>
+            </div>
+          ) : (
+            <>
+              <div style={{ padding: "0 12px 12px 12px" }}>
             <Segmented
               block
               value={selectedCategory}
@@ -357,6 +366,8 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
               }
             ]}
           />
+            </>
+          )}
         </Card>
 
 
@@ -375,9 +386,14 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
             marginTop: 24,
             transition: "background 0.3s, border-color 0.3s"
           }}
-          styles={{ body: { padding: 0 } }}
+          styles={{ body: { padding: treasuryError ? "24px" : 0 } }}
         >
-          {treasuryLoading ? (
+          {treasuryError ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 12px", gap: 12 }}>
+              <Text type="secondary" style={{ fontSize: 13 }}>Failed to load treasury data.</Text>
+              <Button onClick={() => refetchTreasury()} size="small" type="primary">Reload</Button>
+            </div>
+          ) : treasuryLoading ? (
             <div style={{ display: "flex", justifyContent: "center", padding: 24 }}>
               <Spin size="small" />
             </div>
