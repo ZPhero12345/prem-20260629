@@ -1,11 +1,6 @@
 import React, { useState, useMemo, useRef } from "react";
 import { Typography, Button, Card, Col, Row, Statistic, theme, Tooltip as AntTooltip } from "antd";
 import {
-  SettingOutlined,
-  FullscreenOutlined,
-  CameraOutlined,
-  UndoOutlined,
-  RedoOutlined,
   StarOutlined,
   StarFilled
 } from "@ant-design/icons";
@@ -152,11 +147,6 @@ export const CryptoDetailPage: React.FC = () => {
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
-          <AntTooltip title="Undo"><Button type="text" style={{ color: token.colorTextDescription }} icon={<UndoOutlined />} /></AntTooltip>
-          <AntTooltip title="Redo"><Button type="text" style={{ color: token.colorTextDescription }} icon={<RedoOutlined />} /></AntTooltip>
-          <AntTooltip title="Settings"><Button type="text" style={{ color: token.colorTextDescription }} icon={<SettingOutlined />} /></AntTooltip>
-          <AntTooltip title="Camera"><Button type="text" style={{ color: token.colorTextDescription }} icon={<CameraOutlined />} /></AntTooltip>
-          <AntTooltip title="Fullscreen"><Button type="text" style={{ color: token.colorTextDescription }} icon={<FullscreenOutlined />} /></AntTooltip>
         </div>
       </div>
 
