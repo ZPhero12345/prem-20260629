@@ -111,6 +111,7 @@ interface CoinDataResult {
     consensus: string;
     supply: string;
     description: string;
+    image: string;
   };
 }
 
@@ -428,7 +429,8 @@ export async function fetchCoinData(id: string, days: number): Promise<CoinDataR
     launchYear: launchYear,
     consensus: known.consensus,
     supply: formatSupply(coinData.market_data?.circulating_supply, coinData.symbol),
-    description: cleanDescription
+    description: cleanDescription,
+    image: coinData.image?.small || coinData.image?.thumb || ""
   };
 
   const result = {

@@ -1,6 +1,7 @@
 import React from "react";
 import { Layout as AntLayout, Typography, Button } from "antd";
 import { ThunderboltOutlined, SunOutlined, MoonOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const { Header, Content } = AntLayout;
 const { Title } = Typography;
@@ -17,6 +18,8 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTheme, fullBleed, searchBar, globalStats }) => {
+  const navigate = useNavigate();
+
   return (
     <AntLayout style={{ minHeight: "100vh", background: isDarkMode ? "#131313" : "#f5f5f5", transition: "background 0.3s ease" }}>
       {/* Sleek Top Navigation Header */}
@@ -33,7 +36,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTh
         zIndex: 10,
         transition: "background 0.3s, border-color 0.3s"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <Button 
+          type="text" 
+          onClick={() => navigate("/")}
+          style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: 12, 
+            height: 40,
+            padding: "4px 8px",
+            background: "transparent",
+            border: "none",
+            boxShadow: "none"
+          }}
+        >
           <div style={{ 
             width: 32, 
             height: 32, 
@@ -45,10 +61,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTh
           }}>
             <ThunderboltOutlined style={{ color: isDarkMode ? "#002d6c" : "#ffffff", fontSize: 18 }} />
           </div>
-          <Title level={4} style={{ margin: 0, color: isDarkMode ? "#afc6ff" : "#1677ff", fontSize: 18, transition: "color 0.3s" }}>
-            CryptoMetric
-          </Title>
-        </div>
+          <span style={{ color: isDarkMode ? "#afc6ff" : "#1677ff", fontSize: 18, fontWeight: 600 }}>
+            Back to Dashboard
+          </span>
+        </Button>
 
         {/* Centered Search Bar */}
         {searchBar && (

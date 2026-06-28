@@ -70,7 +70,8 @@ export const CryptoDetailPage: React.FC = () => {
     launchYear: 0,
     consensus: "-",
     supply: "-",
-    description: "Fetching coin details from CoinGecko..."
+    description: "Fetching coin details from CoinGecko...",
+    image: ""
   };
 
   const ohlcData = assetData?.ohlcData || [];
@@ -224,10 +225,16 @@ export const CryptoDetailPage: React.FC = () => {
         background: token.colorBgContainer,
         boxSizing: "border-box"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Button onClick={() => navigate("/")} type="text" style={{ color: token.colorTextDescription, fontWeight: 600 }}>
-            ← Back to Dashboard
-          </Button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {coinDetails.image ? (
+            <img 
+              src={coinDetails.image} 
+              alt={coinDetails.name} 
+              style={{ width: 28, height: 28, borderRadius: "50%", display: "block" }} 
+            />
+          ) : (
+            <div style={{ width: 28, height: 28, borderRadius: "50%", background: token.colorBorderSecondary }} />
+          )}
           <Title level={4} style={{ margin: 0, color: token.colorText, display: "flex", alignItems: "center", gap: 8 }}>
             {coinDetails.name} ({coinDetails.symbol.toUpperCase()})
             <span onClick={() => setStarred(!starred)} style={{ cursor: "pointer", fontSize: 16 }}>
