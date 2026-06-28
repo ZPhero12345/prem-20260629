@@ -6,7 +6,7 @@ import { SearchBar } from "./components/SearchBar";
 import { TrendingBar } from "./components/TrendingBar";
 import { MainTrendPage } from "./components/MainTrendPage";
 import { CryptoDetailPage } from "./components/CryptoDetailPage";
-import { fetchTrendingCoins, fetchCoinData } from "./utils/api";
+import { fetchTrendingCoins, fetchCoinData, fetchGlobalStats } from "./utils/api";
 import type { TrendingCoin, MarketChartPoint, OhlcData } from "./utils/api";
 import { Row, Col, Card, Typography, ConfigProvider, theme, Alert } from "antd";
 import { ArrowUpOutlined } from "@ant-design/icons";
@@ -39,6 +39,14 @@ function MainAppContent() {
   const [_isSearchFocused, setIsSearchFocused] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Fetch global crypto stats
+  const { data: globalStats } = useQuery({
+    queryKey: ["globalStats"],
+    queryFn: fetchGlobalStats,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+
   // Fetch trending coins
   const { data: trendingCoins = [], isLoading: trendingLoading, isError: trendingError } = useQuery<TrendingCoin[]>({
     queryKey: ["trendingCoins"],
@@ -56,19 +64,6 @@ function MainAppContent() {
     retry: 1,
   });
 
-  const coinDetails = assetData?.coinDetails || {
-    name: "Bitcoin",
-    symbol: "BTC",
-    price: 64210.50,
-    change24h: 2.45,
-    marketCap: "$1.2T",
-    volume: "$34.8B",
-    creator: "Satoshi Nakamoto",
-    launchYear: 2009,
-    consensus: "Proof of Work (PoW)",
-    supply: "19.5M BTC",
-    description: "Bitcoin is the world's first and most widely adopted decentralized digital currency, enabling peer-to-peer transactions without intermediaries."
-  };
 
   const dynamicTextColor = isDarkMode ? "#e5e2e1" : "#1f1f1f";
 
@@ -112,6 +107,7 @@ function MainAppContent() {
         isDarkMode={isDarkMode} 
         onToggleTheme={() => setIsDarkMode(prev => !prev)} 
         fullBleed={isCoinDetail}
+        globalStats={globalStats}
         searchBar={
           <SearchBar 
             onSelectAsset={(id) => navigate(`/coin/${id}`)} 
@@ -184,7 +180,6 @@ function MainAppContent() {
 
               {/* Main Trend Dashboard Content */}
               <MainTrendPage
-                coinDetails={coinDetails}
                 chartData={assetData?.chartData || []}
                 ohlc={assetData?.ohlc || null}
                 loading={assetLoading}

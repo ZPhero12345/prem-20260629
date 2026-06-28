@@ -1,25 +1,14 @@
 import React, { useState } from "react";
-import { Card, Typography, Row, Col, Table, Button, Badge, theme } from "antd";
-import { StarFilled, StarOutlined, ShareAltOutlined, LayoutOutlined } from "@ant-design/icons";
-import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, AreaChart, Area } from "recharts";
+import { Card, Typography, Row, Col, Table, theme, Segmented, Spin } from "antd";
+import { StarFilled, StarOutlined, GlobalOutlined } from "@ant-design/icons";
+import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { fetchMarketCoins, fetchPublicTreasury } from "../utils/api";
 import type { MarketChartPoint, OhlcData } from "../utils/api";
 
-const { Title, Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 interface MainTrendPageProps {
-  coinDetails: {
-    name: string;
-    symbol: string;
-    price: number;
-    change24h: number;
-    marketCap: string;
-    volume: string;
-    creator: string;
-    launchYear: number;
-    consensus: string;
-    supply: string;
-    description: string;
-  };
   chartData: MarketChartPoint[];
   ohlc: OhlcData | null;
   loading: boolean;
@@ -27,7 +16,6 @@ interface MainTrendPageProps {
 }
 
 export const MainTrendPage: React.FC<MainTrendPageProps> = ({
-  coinDetails,
   chartData,
   ohlc: _ohlc,
   loading: _loading,
@@ -45,36 +33,42 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
     setStarredCoins(prev => ({ ...prev, [symbol]: !prev[symbol] }));
   };
 
-  // Watchlist items (as in Screenshot 1)
-  const watchlistData = [
-    { key: "1", id: "avalanche-2", symbol: "AVAX", name: "AVAX", price: 38.92, change: -4.21 },
-    { key: "2", id: "matic-network", symbol: "MATIC", name: "MATIC", price: 92.68, change: 7.84 },
-    { key: "3", id: "oasis-network", symbol: "ROSE", name: "ROSE", price: 8.33, change: 1.02 },
-    { key: "4", id: "decred", symbol: "DCR", name: "DCR", price: 45.69, change: -17.88 },
-    { key: "5", id: "cardano", symbol: "ADA", name: "ADA", price: 0.435, change: 5.21 },
-    { key: "6", id: "solana", symbol: "SOL", name: "SOL", price: 145.30, change: -2.37 },
-  ];
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
-  // Order Book Mock Data
-  const orderBookAsks = [
-    { price: 1.048, amount: 100.0, total: 104.80 },
-    { price: 1.034, amount: 15.0, total: 1342.63 },
-    { price: 1.027, amount: 266.0, total: 476.24 },
-    { price: 1.028, amount: 404.9, total: 351.69 },
-    { price: 1.019, amount: 100.0, total: 10.52 },
-    { price: 1.017, amount: 10.4, total: 5407.56 },
-    { price: 1.017, amount: 10.4, total: 5407.56 },
-  ];
+  // Query category-filtered coins
+  const { data: marketCoins = [], isLoading: marketLoading } = useQuery({
+    queryKey: ["marketCoins", selectedCategory],
+    queryFn: () => fetchMarketCoins(selectedCategory || undefined, 6),
+    staleTime: 30000,
+    retry: 1
+  });
 
-  const orderBookBids = [
-    { price: 1.048, amount: 100.0, total: 104.80 },
-    { price: 1.038, amount: 1284.2, total: 102.72 },
-    { price: 1.023, amount: 270.0, total: 10.24 },
-    { price: 1.027, amount: 266.0, total: 476.24 },
-    { price: 1.020, amount: 468.1, total: 410.98 },
-    { price: 1.028, amount: 404.9, total: 351.69 },
-    { price: 1.028, amount: 404.9, total: 351.69 },
-  ];
+  // Query corporate holdings (public treasury)
+  const { data: treasuryData, isLoading: treasuryLoading } = useQuery({
+    queryKey: ["publicTreasury"],
+    queryFn: fetchPublicTreasury,
+    staleTime: 10 * 60 * 1000,
+    retry: 1
+  });
+
+  const tableData = marketCoins.length > 0
+    ? marketCoins.map((coin: any, idx: number) => ({
+        key: (idx + 1).toString(),
+        id: coin.id,
+        symbol: coin.symbol.toUpperCase(),
+        name: coin.name,
+        price: coin.current_price || 0,
+        change: coin.price_change_percentage_24h || 0
+      }))
+    : [
+        { key: "1", id: "avalanche-2", symbol: "AVAX", name: "AVAX", price: 38.92, change: -4.21 },
+        { key: "2", id: "matic-network", symbol: "MATIC", name: "MATIC", price: 92.68, change: 7.84 },
+        { key: "3", id: "oasis-network", symbol: "ROSE", name: "ROSE", price: 8.33, change: 1.02 },
+        { key: "4", id: "decred", symbol: "DCR", name: "DCR", price: 45.69, change: -17.88 },
+        { key: "5", id: "cardano", symbol: "ADA", name: "ADA", price: 0.435, change: 5.21 },
+        { key: "6", id: "solana", symbol: "SOL", name: "SOL", price: 145.30, change: -2.37 }
+      ];
+
 
   // Convert chartData to standard format for BarChart
   const displayData = chartData.map((pt, idx) => ({
@@ -186,85 +180,6 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
           </div>
         </Card>
 
-        {/* Info card bottom-left */}
-        <Card
-          style={{
-            background: token.colorBgContainer,
-            border: `1px solid ${token.colorBorderSecondary}`,
-            borderRadius: 8,
-            transition: "background 0.3s, border-color 0.3s"
-          }}
-          styles={{ body: { padding: 24 } }}
-        >
-          {/* Header Row */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: "50%",
-                background: "#ff6b35",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 800,
-                color: "#fff"
-              }}>
-                {coinDetails.symbol.charAt(0)}
-              </div>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Title level={3} style={{ margin: 0, color: token.colorText }}>{coinDetails.name}</Title>
-                  <Badge count="Active" style={{ backgroundColor: "rgba(109,224,57,0.15)", color: token.colorSuccess, border: `1px solid ${token.colorSuccess}` }} />
-                </div>
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <Button ghost icon={<StarOutlined />} style={{ color: token.colorTextDescription, borderColor: token.colorBorder }}>Watchlist</Button>
-              <Button ghost icon={<ShareAltOutlined />} style={{ color: token.colorTextDescription, borderColor: token.colorBorder }}>Share</Button>
-            </div>
-          </div>
-
-          <Title level={4} style={{ color: token.colorText, margin: "0 0 12px 0" }}>{coinDetails.name} ({coinDetails.symbol})</Title>
-          <Paragraph style={{ color: token.colorTextDescription, fontSize: 14, lineHeight: "1.6" }}>
-            {coinDetails.description}
-          </Paragraph>
-
-          {/* Details Grid */}
-          <Row gutter={[16, 24]} style={{ marginTop: 24, borderTop: `1px solid ${token.colorBorder}`, paddingTop: 20 }}>
-            <Col xs={12} sm={6}>
-              <Text type="secondary" style={{ fontSize: 12, display: "block" }}>Creator</Text>
-              <Text style={{ color: token.colorText, fontWeight: 600, fontSize: 14 }}>{coinDetails.creator}</Text>
-            </Col>
-            <Col xs={12} sm={6}>
-              <Text type="secondary" style={{ fontSize: 12, display: "block" }}>Launch Year</Text>
-              <Text style={{ color: token.colorText, fontWeight: 600, fontSize: 14 }}>{coinDetails.launchYear}</Text>
-            </Col>
-            <Col xs={12} sm={6}>
-              <Text type="secondary" style={{ fontSize: 12, display: "block" }}>Consensus Mechanism</Text>
-              <Text style={{ color: token.colorText, fontWeight: 600, fontSize: 14 }}>{coinDetails.consensus}</Text>
-            </Col>
-            <Col xs={12} sm={6}>
-              <Text type="secondary" style={{ fontSize: 12, display: "block" }}>Current Supply</Text>
-              <Text style={{ color: token.colorText, fontWeight: 600, fontSize: 14 }}>{coinDetails.supply}</Text>
-            </Col>
-          </Row>
-
-          {/* Sparkline underneath */}
-          <div style={{ height: 100, marginTop: 24 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={displayData}>
-                <defs>
-                  <linearGradient id="colorTrend" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ff6b35" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#ff6b35" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <Area type="monotone" dataKey="value" stroke="#ff6b35" strokeWidth={2} fillOpacity={1} fill="url(#colorTrend)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
       </Col>
 
       {/* Right side column: Watchlist Table and Order Book */}
@@ -279,14 +194,28 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
             marginBottom: 24,
             transition: "background 0.3s, border-color 0.3s"
           }}
-          styles={{ body: { padding: 0 } }}
+          styles={{ body: { padding: "12px 0 0 0" } }}
         >
+          <div style={{ padding: "0 12px 12px 12px" }}>
+            <Segmented
+              block
+              value={selectedCategory}
+              onChange={(val) => setSelectedCategory(val as string)}
+              options={[
+                { label: "All", value: "" },
+                { label: "L1", value: "layer-1" },
+                { label: "DeFi", value: "decentralized-finance-defi" },
+                { label: "Memes", value: "meme-token" }
+              ]}
+            />
+          </div>
           <Table
-            dataSource={watchlistData}
+            dataSource={tableData}
             pagination={false}
             size="small"
             showHeader={true}
-            rowKey="symbol"
+            loading={marketLoading}
+            rowKey="id"
             onRow={(record) => ({
               onClick: () => onSelectAsset(record.id),
               style: { cursor: "pointer" }
@@ -340,68 +269,64 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
           />
         </Card>
 
-        {/* Order Book Card */}
+
+        {/* Bitcoin Corporate Holdings Card */}
         <Card
           title={
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ color: token.colorText, fontSize: 14, fontWeight: 700 }}>Order Book</span>
-              <div style={{ display: "flex", gap: 4 }}>
-                <Button size="small" type="text" style={{ color: token.colorText }} icon={<LayoutOutlined />} />
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <GlobalOutlined style={{ color: "#ff6b35" }} />
+              <span style={{ color: token.colorText, fontSize: 14, fontWeight: 700 }}>Bitcoin Corporate Holdings</span>
             </div>
           }
           style={{
             background: token.colorBgContainer,
             border: `1px solid ${token.colorBorderSecondary}`,
             borderRadius: 8,
+            marginTop: 24,
             transition: "background 0.3s, border-color 0.3s"
           }}
-          styles={{ body: { padding: 12 } }}
+          styles={{ body: { padding: 0 } }}
         >
-          {/* Table Headers */}
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 8px", borderBottom: `1px solid ${token.colorBorder}`, marginBottom: 8 }}>
-            <Text type="secondary" style={{ fontSize: 11 }}>Price</Text>
-            <Text type="secondary" style={{ fontSize: 11 }}>Amount</Text>
-            <Text type="secondary" style={{ fontSize: 11 }}>Total</Text>
-          </div>
-
-          {/* ASKS (Sells) - Red */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 12 }}>
-            {orderBookAsks.map((ask, idx) => (
-              <div key={idx} style={{ display: "flex", justifyContent: "space-between", padding: "2px 8px", fontSize: 12 }}>
-                <Text style={{ color: token.colorError, fontWeight: 600 }}>{ask.price.toFixed(3)}</Text>
-                <Text style={{ color: token.colorText }}>{ask.amount.toFixed(1)}</Text>
-                <Text style={{ color: token.colorTextDescription }}>{ask.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-              </div>
-            ))}
-          </div>
-
-          {/* Spread / Mid Market Price */}
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "8px",
-            background: "rgba(109, 224, 57, 0.08)",
-            borderTop: `1px solid ${token.colorBorder}`,
-            borderBottom: `1px solid ${token.colorBorder}`,
-            marginBottom: 12
-          }}>
-            <span style={{ color: token.colorSuccess, fontWeight: 700, fontSize: 14 }}>
-              ↓ 1,362.08
-            </span>
-            <Text style={{ color: token.colorTextDescription, fontSize: 11 }}>1,085 / 1,186</Text>
-          </div>
-
-          {/* BIDS (Buys) - Green */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {orderBookBids.map((bid, idx) => (
-              <div key={idx} style={{ display: "flex", justifyContent: "space-between", padding: "2px 8px", fontSize: 12 }}>
-                <Text style={{ color: token.colorSuccess, fontWeight: 600 }}>{bid.price.toFixed(3)}</Text>
-                <Text style={{ color: token.colorText }}>{bid.amount.toFixed(1)}</Text>
-                <Text style={{ color: token.colorTextDescription }}>{bid.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-              </div>
-            ))}
-          </div>
+          {treasuryLoading ? (
+            <div style={{ display: "flex", justifyContent: "center", padding: 24 }}>
+              <Spin size="small" />
+            </div>
+          ) : (
+            <Table
+              dataSource={treasuryData?.companies?.slice(0, 5) || []}
+              pagination={false}
+              size="small"
+              showHeader={true}
+              rowKey="name"
+              columns={[
+                {
+                  title: "Company",
+                  dataIndex: "name",
+                  key: "name",
+                  render: (name, record) => (
+                    <div>
+                      <Text style={{ color: token.colorText, fontWeight: 600, display: "block" }}>{name}</Text>
+                      <Text type="secondary" style={{ fontSize: 10 }}>{record.symbol} • {record.country}</Text>
+                    </div>
+                  )
+                },
+                {
+                  title: "Holdings",
+                  dataIndex: "total_holdings",
+                  key: "total_holdings",
+                  align: "right",
+                  render: (val) => <Text style={{ color: token.colorText, fontWeight: 600 }}>{val.toLocaleString()} BTC</Text>
+                },
+                {
+                  title: "Value",
+                  dataIndex: "total_current_value_usd",
+                  key: "total_current_value_usd",
+                  align: "right",
+                  render: (val) => <Text style={{ color: token.colorText }}>${(val / 1e6).toFixed(1)}M</Text>
+                }
+              ]}
+            />
+          )}
         </Card>
       </Col>
     </Row>

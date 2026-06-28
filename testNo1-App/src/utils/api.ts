@@ -50,6 +50,36 @@ export interface OhlcData {
   close: number;
 }
 
+export interface GlobalStats {
+  active_cryptocurrencies: number;
+  upcoming_icos: number;
+  ongoing_icos: number;
+  ended_icos: number;
+  markets: number;
+  total_market_cap: Record<string, number>;
+  total_volume: Record<string, number>;
+  market_cap_percentage: Record<string, number>;
+  market_cap_change_percentage_24h_usd: number;
+  updated_at: number;
+}
+
+export interface TreasuryCompany {
+  name: string;
+  symbol: string;
+  country: string;
+  total_holdings: number;
+  total_entry_value_usd: number;
+  total_current_value_usd: number;
+  percentage_of_total_supply: number;
+}
+
+export interface PublicTreasuryData {
+  total_holdings: number;
+  total_value_usd: number;
+  market_cap_dominance: number;
+  companies: TreasuryCompany[];
+}
+
 // Well-known details map for metadata not provided natively in simple API forms
 const WELL_KNOWN_METADATA: Record<string, { creator: string; consensus: string; launchYear?: number }> = {
   bitcoin: { creator: "Satoshi Nakamoto", consensus: "Proof of Work (PoW)", launchYear: 2009 },
@@ -414,4 +444,30 @@ export async function fetchCoinData(id: string, days: number): Promise<CoinDataR
   };
 
   return result;
+}
+
+export async function fetchGlobalStats(): Promise<GlobalStats> {
+  const response = await fetchFromApi("/global");
+  if (!response.ok) {
+    throw new Error(`CoinGecko Global API error: ${response.status} ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data.data;
+}
+
+export async function fetchPublicTreasury(): Promise<PublicTreasuryData> {
+  const response = await fetchFromApi("/companies/public_treasury/bitcoin");
+  if (!response.ok) {
+    throw new Error(`CoinGecko Treasury API error: ${response.status} ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchMarketCoins(category?: string, perPage: number = 6): Promise<any[]> {
+  const categoryParam = category ? `&category=${category}` : "";
+  const response = await fetchFromApi(`/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${perPage}&page=1${categoryParam}`);
+  if (!response.ok) {
+    throw new Error(`CoinGecko markets API error: ${response.status} ${response.statusText}`);
+  }
+  return response.json();
 }
