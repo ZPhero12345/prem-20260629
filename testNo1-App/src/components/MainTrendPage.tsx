@@ -206,6 +206,13 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
                           alt={pieData[activeIndex].name} 
                           style={{ width: 22, height: 22, borderRadius: "50%", marginBottom: 2 }} 
                         />
+                      ) : pieData[activeIndex].name === "Others" ? (
+                        <div style={{ display: "flex", alignItems: "center", position: "relative", width: 50, height: 22, marginBottom: 2 }}>
+                          <img src="https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1696501867" alt="BNB" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 0, zIndex: 4 }} />
+                          <img src="https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694" alt="USDC" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 10, zIndex: 3 }} />
+                          <img src="https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png?1696501358" alt="XRP" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 20, zIndex: 2 }} />
+                          <img src="https://coin-images.coingecko.com/coins/images/4128/large/solana.png?1696504756" alt="SOL" style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 30, zIndex: 1 }} />
+                        </div>
                       ) : (
                         <div style={{ width: 22, height: 22, borderRadius: "50%", background: pieData[activeIndex].color, marginBottom: 2 }} />
                       )}
@@ -262,6 +269,13 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         {item.logo ? (
                           <img src={item.logo} alt={item.fullName} style={{ width: 16, height: 16, borderRadius: "50%" }} />
+                        ) : item.name === "Others" ? (
+                          <div style={{ display: "flex", alignItems: "center", position: "relative", width: 34, height: 16 }}>
+                            <img src="https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1696501867" alt="BNB" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 0, zIndex: 4 }} />
+                            <img src="https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694" alt="USDC" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 7, zIndex: 3 }} />
+                            <img src="https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png?1696501358" alt="XRP" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 14, zIndex: 2 }} />
+                            <img src="https://coin-images.coingecko.com/coins/images/4128/large/solana.png?1696504756" alt="SOL" style={{ width: 12, height: 12, borderRadius: "50%", border: "1px solid #1c1b1b", position: "absolute", left: 21, zIndex: 1 }} />
+                          </div>
                         ) : (
                           <span style={{ width: 16, height: 16, borderRadius: "50%", background: item.color, display: "inline-block" }} />
                         )}
