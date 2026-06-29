@@ -214,14 +214,7 @@ export const CryptoDetailPage: React.FC = () => {
 
 
   return (
-    <div style={{
-      background: "transparent",
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      flexDirection: "column",
-      overflow: "hidden"
-    }}>
+    <div className="detail-page-root">
       {/* Top bar: Back button, title, and actions */}
       <div style={{
         display: "flex",

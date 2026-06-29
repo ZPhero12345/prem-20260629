@@ -13,10 +13,26 @@ body {
 }
 
 /* Split Layout for Fullscreen Details Page */
+.detail-page-root {
+  background: transparent;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .detail-layout-container {
   display: flex;
   flex: 1;
   height: calc(100% - 52px);
+  overflow: hidden;
+}
+
+.detail-watchlist-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   overflow: hidden;
 }
 
@@ -36,13 +52,6 @@ body {
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
-}
-
-.detail-watchlist-container {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow: hidden;
 }
 
 .watchlist-scroll-container {
@@ -72,9 +81,21 @@ body {
 }
 
 @media (max-width: 992px) {
+  /* Override Ant Design Content inline height and overflow on mobile */
+  .ant-layout-content {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .detail-page-root {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   .detail-layout-container {
     flex-direction: column;
-    overflow-y: auto;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .detail-chart-column {
@@ -91,8 +112,8 @@ body {
 
   .detail-watchlist-container {
     flex: none;
-    overflow: visible;
-    height: auto;
+    overflow: visible !important;
+    height: auto !important;
   }
 
   .watchlist-scroll-container {
