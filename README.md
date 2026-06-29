@@ -218,7 +218,25 @@ A highly optimized TypeScript algorithm and Jest testing suite designed to calcu
 
 ### Project Structure
 - [maxProfit.ts](file:///d:/prem-20260629/testNo2-App/maxProfit.ts): Contains the core algorithm function `findMaxProfit` and a runnable CLI demo.
-- [maxProfit.test.ts](file:///d:/prem-20260629/testNo2-App/maxProfit.test.ts): Comprehensive unit test suite covering baseline happy paths, volatile markets, sub-dollar fractions, stagnant markets, decreasing trends, empty/single-day boundaries, and performance stress-testing.
+- [maxProfit.test.ts](file:///d:/prem-20260629/testNo2-App/maxProfit.test.ts): Comprehensive unit test suite.
+
+### Unit Test Plan
+The following table outlines the complete test suite designed to validate the algorithm across all market scenarios and boundary edge cases. For detailed assertions and execution logs, please inspect [maxProfit.test.ts](file:///d:/prem-20260629/testNo2-App/maxProfit.test.ts).
+
+| Test ID | Scenario / Focus | Input Prices Array | Expected Output | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **TC-01** | Baseline happy path | `[2, 3, 6, 4, 3]` | `4` | Standard upward drift with correction |
+| **TC-02** | Volatile market | `[7, 1, 5, 3, 6, 4]` | `5` | Multiple peaks and valleys |
+| **TC-03** | Decimal / floating-point | `[10.50, 11.25, 10.10, 12.85, 12.00]` | `2.75` | Standard asset float prices |
+| **TC-04** | Sub-dollar micro-fractions | `[0.0001, 0.0005, 0.0002]` | `0.0004` | Volatile micro-crypto asset ticks |
+| **TC-05** | Monotonically decreasing | `[5, 4, 3, 2, 1]` | `0` | Bear market trend (no profitable trade) |
+| **TC-06** | Stagnant market | `[3.33, 3.33, 3.33]` | `0` | Flat pricing profile (no profit) |
+| **TC-07** | Absolute peak on Day 1 | `[10, 3, 2, 1]` | `0` | Initial peak with steady decline |
+| **TC-08** | Absolute trough on final day | `[3.50, 5.00, 9.50, 2.00, 1.00]` | `6.00` | Trough occurs too late to sell; uses prior peak |
+| **TC-09** | Empty array boundary | `[]` | `0` | Zero inputs boundary check |
+| **TC-10** | Single day price boundary | `[5.50]` | `0` | Requires buy and sell on separate days |
+| **TC-11** | Minimal bounds (2 days) | `[2.10, 10.30]` | `8.20` | Minimum transactional trade duration |
+| **TC-12** | Performance stress test | `50,000` elements (decreasing) | `0` | Must run in linear $\mathcal{O}(n)$ time ($<10\text{ms}$) |
 
 ### How to Run Locally
 
