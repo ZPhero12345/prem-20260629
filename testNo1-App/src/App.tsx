@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, useParams } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { SearchBar } from "./components/SearchBar";
 import { TrendingBar } from "./components/TrendingBar";
@@ -11,6 +11,11 @@ import type { TrendingCoin } from "./utils/api";
 import { Typography, ConfigProvider, theme, Alert } from "antd";
 
 const { Title, Text } = Typography;
+
+function CryptoDetailPageWrapper() {
+  const { id } = useParams<{ id: string }>();
+  return <CryptoDetailPage key={id} />;
+}
 
 
 
@@ -140,7 +145,7 @@ function MainAppContent() {
               />
             </>
           } />
-          <Route path="/coin/:id" element={<CryptoDetailPage />} />
+          <Route path="/coin/:id" element={<CryptoDetailPageWrapper />} />
         </Routes>
       </Layout>
     </ConfigProvider>
