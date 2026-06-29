@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Typography, theme, Tooltip } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
@@ -18,6 +18,11 @@ export const CryptoDetailPage: React.FC = () => {
   const [filter, setFilter] = useState<"rank" | "trending" | "gainers" | "losers">("rank");
 
   const coinId = id || "bitcoin";
+
+  // Reset range to 30 days default when navigating to a different coin
+  useEffect(() => {
+    setSelectedRange(30);
+  }, [coinId]);
 
   // Fetch chart and OHLC data inside the detail page
   const { data: assetData, isFetching } = useQuery({
