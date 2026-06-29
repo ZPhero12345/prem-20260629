@@ -100,12 +100,15 @@ graph TD
 To ensure a highly responsive user experience (60fps rendering) and minimize client-side CPU overhead and network traffic, the application implements several core optimization strategies:
 
 - **Dual-Layer Caching (Network & Local)**:
-  - **React Query Cache**: Historical chart data is managed using TanStack React Query with a configured `staleTime` of 5 minutes. This prevents redundant API requests when a user toggles back and forth between different ranges or navigates between pages.
-  - **Local Storage Caching**: The heavy index of 10,000+ coins and logos is cached in `localStorage` with a 24-hour Time-to-Live (TTL). This eliminates the need to fetch the massive directory on every search box focus or keystroke.
+  - **React Query Cache**: Applied to `/coins/{id}/ohlc` queries in [CryptoDetailPage.tsx](file:///d:/prem-20260629/testNo1-App/src/components/CryptoDetailPage.tsx) and `/global` stats in [App.tsx](file:///d:/prem-20260629/testNo1-App/src/App.tsx). Configured with a `staleTime` of 5 minutes to prevent redundant network requests during frequent segment range changes or back-and-forth page navigation.
+  - **Local Storage Caching**: Applied to the master list of 10,000+ supported coins in `fetchCoinList` within [api.ts](file:///d:/prem-20260629/testNo1-App/src/utils/api.ts). Caches the directory for 24 hours to enable instant, zero-latency typo-tolerant queries inside [SearchBar.tsx](file:///d:/prem-20260629/testNo1-App/src/components/SearchBar.tsx) without overloading the CoinGecko public rate limit.
 - **Hook-Level Optimization (Avoiding Unnecessary Re-renders)**:
-  - **`useMemo`**: Heavy calculations—such as calculations of chunk size for aggregating raw CoinGecko ticks into candlesticks, calculating the minimum/maximum bounds, and sorting the search suggestions list—are wrapped in `useMemo` hooks. They are only recalculated when their dependency inputs change.
-  - **`useCallback`**: Input change handlers and navigation triggers are memoized to preserve component identity and prevent child components from re-rendering.
+  - **`useMemo`**:
+    - `candlestickData` in [CryptoDetailPage.tsx](file:///d:/prem-20260629/testNo1-App/src/components/CryptoDetailPage.tsx): Prevents recalculating the chunking/grouping algorithm of raw price array coordinates into daily candlesticks on every layout repaint.
+    - `overallOhlc` in [CryptoDetailPage.tsx](file:///d:/prem-20260629/testNo1-App/src/components/CryptoDetailPage.tsx): Memoizes range min/max calculations of Open/High/Low/Close statistics.
+    - `suggestions` in [SearchBar.tsx](file:///d:/prem-20260629/testNo1-App/src/components/SearchBar.tsx): Avoids re-running the Levenshtein fuzzy scoring and market cap sorting across thousands of tokens unless the search term changes.
+  - **`useCallback`**: Memoizes the `onSelectAsset` callbacks in parent views to prevent unnecessary re-rendering of input components.
 - **Direct DOM Manipulation via Refs (Avoiding React State Lag)**:
-  - During mouse movement over the chart, the crosshair coordinates update at 60fps. Updating React state on every frame would trigger parent-component re-renders (including re-calculating layouts). 
-  - To prevent this, the crosshair listener writes values directly to the DOM nodes using `useRef` (e.g. `openStatRef`, `highStatRef`, etc.), bypassing the React render pipeline entirely and achieving buttery-smooth 60fps interaction.
+  - Implemented inside `subscribeCrosshairMove` listener within [CandlestickChart.tsx](file:///d:/prem-20260629/testNo1-App/src/components/CandlestickChart.tsx).
+  - Hovering the crosshair updates target element text content directly via React Refs (`openStatRef`, `highStatRef`, `lowStatRef`, `closeStatRef` in [CryptoDetailPage.tsx](file:///d:/prem-20260629/testNo1-App/src/components/CryptoDetailPage.tsx)). This bypasses the React component lifecycle entirely, avoiding hundreds of layout re-render frames and enabling buttery-smooth 60fps crosshair updates.
 
