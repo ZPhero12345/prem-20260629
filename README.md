@@ -203,3 +203,43 @@ Make sure you have [Node.js (v20+)](https://nodejs.org/) and [pnpm](https://pnpm
 ### Limitations & Considerations
 - **API Rate Limits:** CoinGecko's keyless public API limits clients to ~10-30 requests/minute. The app implements background caching of the coin directory and uses React Query stale times to prevent double-fetching, falling back gracefully to cached mock data if rate limits are hit.
 - **OHLC Resolution:** CoinGecko clusters candles automatically (e.g. 1-day range returns 30-minute granularity; 90-day range returns daily granularity). The chart handles this change in time resolution dynamically.
+
+---
+
+## Test No. 2: Max Profit Algorithm
+
+### Project Overview
+A highly optimized TypeScript algorithm and Jest testing suite designed to calculate the maximum potential profit from a chronological sequence of asset/stock prices. The implementation guarantees a single-pass traversal that solves the problem in linear time with constant memory.
+
+### Technical Design & Solutions
+- **Single-Pass Greedy Traversal ($\mathcal{O}(n)$ Time / $\mathcal{O}(1)$ Space)**: Rather than nested loops ($\mathcal{O}(n^2)$), the algorithm maintains a running tracking of the `minPrice` encountered so far. At each step, it calculates the profit if sold at the `currentPrice` and updates `maxProfit` if the new profit is higher, achieving maximum speed and zero memory overhead.
+- **Floating-Point Precision Guard**: To handle assets with sub-dollar micro-fluctuations (common in volatile cryptocurrency markets, e.g. fractions like `$0.0001`), the profit is rounded using `Math.round(diff * 1e10) / 1e10` to bypass standard floating-point representation bugs (IEEE 754 precision issues).
+- **Graceful Boundary Handlers**: Returns `0` instantly if the input array is null, empty, or contains only a single day's price (since buying and selling requires at least two distinct days).
+
+### Project Structure
+- [maxProfit.ts](file:///d:/prem-20260629/testNo2-App/maxProfit.ts): Contains the core algorithm function `findMaxProfit` and a runnable CLI demo.
+- [maxProfit.test.ts](file:///d:/prem-20260629/testNo2-App/maxProfit.test.ts): Comprehensive unit test suite covering baseline happy paths, volatile markets, sub-dollar fractions, stagnant markets, decreasing trends, empty/single-day boundaries, and performance stress-testing.
+
+### How to Run Locally
+
+1. **Navigate to the Project Directory**:
+   ```bash
+   cd testNo2-App
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   pnpm install
+   ```
+   *(Or use `npm install` / `yarn install` if preferred)*
+
+3. **Run Unit Tests (Jest)**:
+   ```bash
+   pnpm test
+   ```
+
+4. **Execute CLI Script Demo**:
+   ```bash
+   npx ts-node maxProfit.ts
+   ```
+
