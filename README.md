@@ -47,18 +47,7 @@ The application was designed under several key architectural constraints:
 
 ## 🎨 System Design & Architecture (Test 1)
 
-For deep design reviews, Hick's Law/Dow Theory UX choices, and API constraint management, see the **[Test No. 1 Detailed Specs Document](./docs/test1-crypto-chart.md)**.
-
-```mermaid
-graph TD
-    User[User / Browser] -->|1. Focuses Search / Inputs Typo| UI[React SearchBar]
-    UI -->|2. Executes Fuzzy Search| LocalCache[Local Search Index Cache]
-    UI -->|3. Fallback / Detail Query| ApiService[utils/api.ts]
-    ApiService -->|4. HTTP Request| CoinGecko[CoinGecko Public API v3]
-    ApiService -->|5. Store cached response| LocalStorage[(Local Storage / Memory Cache)]
-    ApiService -->|6. Process OHLC / Math| UI
-    UI -->|7. Render Chart| Chart[Lightweight Charts / OHLC Grid]
-```
+For the full interactive Mermaid system architecture diagram, components mapping, design choices, and data flow specifications, please see the **[Test No. 1: System Design & Architecture Section](./docs/test1-crypto-chart.md#system-design--architecture)**.
 
 ---
 

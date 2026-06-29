@@ -10,6 +10,21 @@ A responsive React Client-Side Single Page Application (SPA) designed to search 
 
 ---
 
+## 🎨 System Design & Architecture
+
+```mermaid
+graph TD
+    User[User / Browser] -->|1. Focuses Search / Inputs Typo| UI[React SearchBar]
+    UI -->|2. Executes Fuzzy Search| LocalCache[Local Search Index Cache]
+    UI -->|3. Fallback / Detail Query| ApiService[utils/api.ts]
+    ApiService -->|4. HTTP Request| CoinGecko[CoinGecko Public API v3]
+    ApiService -->|5. Store cached response| LocalStorage[(Local Storage / Memory Cache)]
+    ApiService -->|6. Process OHLC / Math| UI
+    UI -->|7. Render Chart| Chart[Lightweight Charts / OHLC Grid]
+```
+
+---
+
 ## Product Design & Features
 
 ### 1. Smart Search & Suggestions (6a, 6b)
