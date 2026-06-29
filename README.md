@@ -20,6 +20,22 @@ This repository contains the Fullstack Engineering Assessment covering two prima
 
 ---
 
+## 🎨 Design & Documentation
+
+### 📄 Product Design Review (PDR)
+The application was designed under several key architectural constraints:
+- **Search Tolerance:** Implementing fuzzy/Levenshtein algorithms locally when API endpoints rate-limit or fail, ensuring users can search with typos (e.g. typing "etherium" to retrieve "ethereum").
+- **Minimalist UX:** Restricting chart time-range options to prevent cognitive overload (e.g. choosing 1 Day, 7 Days, 30 Days, 90 Days).
+- **API Performance:** Utilizing local caching (5-minute TTL for api requests, 24-hour TTL for full coins dictionary) to bypass CoinGecko's public demo API rate limits.
+
+### 🎥 Demo Video
+- [Walkthrough Video Link (Replace with your actual link)](#)
+
+### 🎨 Figma Design Link
+- [Figma Design File (Replace with your actual link)](#)
+
+---
+
 ## Tech Stack Summary
 
 - **Frontend (Test 1):** React (v19), TypeScript, Ant Design (v6), Lightweight Charts (by TradingView), React Router (v7), TanStack React Query (v5).
