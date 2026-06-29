@@ -35,7 +35,7 @@ The application was designed under several key architectural constraints:
 - **API Performance:** Utilizing local caching (5-minute TTL for api requests, 24-hour TTL for full coins dictionary) to bypass CoinGecko's public demo API rate limits.
 
 ### 🎥 Demo Video
-- [Walkthrough Video Link](https://youtu.be/zBIzM3bDJAw)
+- [Walkthrough Video Link](https://youtu.be/JmGAQ_atatY)
 
 ### 🎨 UI Design Ideas Link
 - [Google Stitch UI Design Ideas](https://stitch.withgoogle.com/projects/11199194387275475295)
