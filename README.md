@@ -68,6 +68,10 @@ The application communicates with the CoinGecko API and relies on the following 
 > **Why are API keys embedded in Docker?**
 > Vite compiles environment variables (prefixed with `VITE_`) directly into the production JavaScript bundle at **build-time**. Passing runtime variables via `docker run -e` will **not** work because the static client files have already been built. Therefore, the variables must be present during the `docker build` phase.
 
+> [!NOTE]
+> **API Key Convenience for Reviewers**
+> For testing and evaluation convenience, a working API key has been pre-configured directly inside the Docker build configuration. This ensures that reviewers can simply run `docker build` and launch the application without the extra setup step of obtaining or configuring custom API keys. Since this repository is strictly for this submission, we've pre-packaged it to make the verification process as seamless as possible.
+
 #### Using Your Own API Key with Docker
 If you want to build the Docker image using your own API key instead of the default fallback keys, pass them as `--build-arg` options during the build process:
 ```bash
