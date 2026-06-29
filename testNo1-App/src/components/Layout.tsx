@@ -1,6 +1,6 @@
 import React from "react";
 import { Layout as AntLayout, Button } from "antd";
-import { ArrowLeftOutlined, SunOutlined, MoonOutlined } from "@ant-design/icons";
+import { SunOutlined, MoonOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Header, Content } = AntLayout;
@@ -35,21 +35,32 @@ export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTh
         zIndex: 10,
         transition: "background 0.3s, border-color 0.3s"
       }}>
-        <Button 
-          type="text" 
+        <div 
           onClick={() => navigate("/")}
-          icon={<ArrowLeftOutlined style={{ color: isDarkMode ? "#afc6ff" : "#1677ff", fontSize: 22 }} />}
           style={{ 
+            cursor: "pointer",
             display: "flex", 
             alignItems: "center", 
-            justifyContent: "center",
-            height: 40,
-            width: 40,
-            background: "transparent",
-            border: "none",
-            boxShadow: "none"
+            gap: 10,
+            userSelect: "none"
           }}
-        />
+        >
+          {/* Modern vector logo combining a digital coin node and explorer magnifying glass */}
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="6" stroke={isDarkMode ? "#afc6ff" : "#1677ff"} strokeWidth="2.5" />
+            <path d="M14.5 14.5L20 20" stroke={isDarkMode ? "#afc6ff" : "#1677ff"} strokeWidth="2.5" strokeLinecap="round" />
+            <circle cx="10" cy="10" r="2.5" fill={isDarkMode ? "#e5e2e1" : "#1f1f1f"} />
+          </svg>
+          <span style={{ 
+            color: isDarkMode ? "#e5e2e1" : "#1f1f1f", 
+            fontSize: 20, 
+            fontWeight: 800,
+            letterSpacing: "-0.03em",
+            fontFamily: "Outfit, Inter, system-ui, sans-serif"
+          }}>
+            Crypto<span style={{ color: isDarkMode ? "#afc6ff" : "#1677ff", fontWeight: 500 }}>Explorer</span>
+          </span>
+        </div>
 
         {/* Centered Search Bar */}
         {searchBar && (

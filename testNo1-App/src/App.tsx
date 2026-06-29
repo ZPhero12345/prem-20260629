@@ -106,7 +106,7 @@ function MainAppContent() {
               {/* Top Header section */}
               <div style={{ marginBottom: 28 }}>
                 <Title level={2} style={{ margin: "0 0 8px 0", color: dynamicTextColor, fontWeight: 700 }}>
-                  Crypto View
+                  Crypto Explorer
                 </Title>
                 <Text style={{ color: isDarkMode ? "#8b90a0" : "#595959", fontSize: 14, display: "block", lineHeight: "1.6" }}>
                   Explore live-updated cryptocurrency price charts and detailed statistics (OHLC) in a user-friendly interface. Search for any coin with smart suggestions, view trending assets, and track historical price movements across essential time ranges.
