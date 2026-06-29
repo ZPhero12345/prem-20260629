@@ -1,6 +1,6 @@
 import React from "react";
 import { Layout as AntLayout, Typography, Button } from "antd";
-import { ThunderboltOutlined, SunOutlined, MoonOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, SunOutlined, MoonOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Header, Content } = AntLayout;
@@ -39,32 +39,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTh
         <Button 
           type="text" 
           onClick={() => navigate("/")}
+          icon={<ArrowLeftOutlined style={{ color: isDarkMode ? "#afc6ff" : "#1677ff", fontSize: 22 }} />}
           style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: 12, 
+            justifyContent: "center",
             height: 40,
-            padding: "4px 8px",
+            width: 40,
             background: "transparent",
             border: "none",
             boxShadow: "none"
           }}
-        >
-          <div style={{ 
-            width: 32, 
-            height: 32, 
-            borderRadius: 6, 
-            background: isDarkMode ? "#afc6ff" : "#1677ff", 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center" 
-          }}>
-            <ThunderboltOutlined style={{ color: isDarkMode ? "#002d6c" : "#ffffff", fontSize: 18 }} />
-          </div>
-          <span style={{ color: isDarkMode ? "#afc6ff" : "#1677ff", fontSize: 18, fontWeight: 600 }}>
-            Back to Dashboard
-          </span>
-        </Button>
+        />
 
         {/* Centered Search Bar */}
         {searchBar && (
