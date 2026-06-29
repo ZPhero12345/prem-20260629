@@ -67,3 +67,9 @@ The following table outlines the complete test suite designed to validate the al
    ```bash
    npx ts-node maxProfit.ts
    ```
+
+   > [!TIP]
+   > **Manual Verification & Custom Inputs**
+   > Inside [maxProfit.ts](file:///d:/prem-20260629/testNo2-App/maxProfit.ts), a helper `main()` function has been implemented at the bottom of the file. 
+   > If you wish to manually execute the script or test custom input arrays, you can edit the price array passed to `findMaxProfit(...)` inside the `main()` function, save the file, and re-run the CLI command: `npx ts-node maxProfit.ts`.
+

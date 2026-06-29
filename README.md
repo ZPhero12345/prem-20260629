@@ -121,6 +121,7 @@ Make sure you have [Node.js (v20+)](https://nodejs.org/) and [pnpm](https://pnpm
    ```bash
    npx ts-node maxProfit.ts
    ```
+   *(Note: You can edit the price array values inside the `main()` function at the bottom of [maxProfit.ts](file:///d:/prem-20260629/testNo2-App/maxProfit.ts) to test custom input values manually)*
 
 ---
 
