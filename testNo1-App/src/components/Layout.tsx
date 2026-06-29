@@ -80,21 +80,14 @@ export const Layout: React.FC<LayoutProps> = ({ children, isDarkMode, onToggleTh
 
       {/* Global Stats Bar */}
       {globalStats && (
-        <div style={{
-          background: isDarkMode ? "#161616" : "#ffffff",
-          borderBottom: `1px solid ${isDarkMode ? "#2a2a2a" : "#e8e8e8"}`,
-          height: 38,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 24,
-          fontSize: 12,
-          color: isDarkMode ? "#8b90a0" : "#555555",
-          transition: "background 0.3s, border-color 0.3s",
-          boxSizing: "border-box",
-          flexWrap: "wrap",
-          padding: "0 16px"
-        }}>
+        <div 
+          className="global-stats-bar"
+          style={{
+            background: isDarkMode ? "#161616" : "#ffffff",
+            borderBottom: `1px solid ${isDarkMode ? "#2a2a2a" : "#e8e8e8"}`,
+            color: isDarkMode ? "#8b90a0" : "#555555"
+          }}
+        >
           <span>Coins: <strong style={{ color: isDarkMode ? "#e5e2e1" : "#1f1f1f" }}>{globalStats.active_cryptocurrencies.toLocaleString()}</strong></span>
           <span>Markets: <strong style={{ color: isDarkMode ? "#e5e2e1" : "#1f1f1f" }}>{globalStats.markets.toLocaleString()}</strong></span>
           <span>Total Market Cap: <strong style={{ color: isDarkMode ? "#e5e2e1" : "#1f1f1f" }}>${(globalStats.total_market_cap.usd / 1e12).toFixed(2)}T</strong> <span style={{ color: globalStats.market_cap_change_percentage_24h_usd >= 0 ? "#6de039" : "#ffb4ab" }}>({globalStats.market_cap_change_percentage_24h_usd.toFixed(2)}%)</span></span>

@@ -12,6 +12,19 @@ body {
   width: 100%;
 }
 
+/* Global Stats Bar Ticker */
+.global-stats-bar {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  font-size: 12px;
+  box-sizing: border-box;
+  padding: 0 16px;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
 /* Split Layout for Fullscreen Details Page */
 .detail-page-root {
   background: transparent;
@@ -120,6 +133,22 @@ body {
     flex: none;
     overflow-y: visible !important;
     height: auto !important;
+  }
+
+  .global-stats-bar {
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    scrollbar-width: none !important;
+    padding: 0 16px !important;
+  }
+
+  .global-stats-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .global-stats-bar > span {
+    flex-shrink: 0 !important;
   }
 }
 
