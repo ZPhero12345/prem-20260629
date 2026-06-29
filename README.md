@@ -29,10 +29,6 @@ This repository contains the Fullstack Engineering Assessment covering two prima
 > **Design-First Development Approach**
 > Before any source code was written, a detailed Product Design Report (PDR) blueprint was established to layout the system architecture, mathematical algorithms, and deployment mechanics. The codebase was built following this technical specification as closely as possible to maintain structural alignment.
 
-The application was designed under several key architectural constraints:
-- **Search Tolerance:** Implementing fuzzy/Levenshtein algorithms locally when API endpoints rate-limit or fail, ensuring users can search with typos (e.g. typing "etherium" to retrieve "ethereum").
-- **Minimalist UX:** Restricting chart time-range options to prevent cognitive overload (e.g. choosing 1 Day, 7 Days, 30 Days, 90 Days).
-- **API Performance:** Utilizing local caching (5-minute TTL for api requests, 24-hour TTL for full coins dictionary) to bypass CoinGecko's public demo API rate limits.
 
 ### 🎥 Demo Video
 - [Walkthrough Video Link](https://youtu.be/JmGAQ_atatY)
