@@ -93,3 +93,19 @@ graph TD
 ### 3. Limitations & Considerations
 - **API Rate Limits:** CoinGecko's keyless public API limits clients to ~10-30 requests/minute. The app implements background caching of the coin directory and uses React Query stale times to prevent double-fetching, falling back gracefully to cached mock data if rate limits are hit.
 - **OHLC Resolution:** CoinGecko clusters candles automatically (e.g. 1-day range returns 30-minute granularity; 90-day range returns daily granularity). The chart handles this change in time resolution dynamically.
+
+---
+
+### 4. Performance & Frontend Optimizations
+To ensure a highly responsive user experience (60fps rendering) and minimize client-side CPU overhead and network traffic, the application implements several core optimization strategies:
+
+- **Dual-Layer Caching (Network & Local)**:
+  - **React Query Cache**: Historical chart data is managed using TanStack React Query with a configured `staleTime` of 5 minutes. This prevents redundant API requests when a user toggles back and forth between different ranges or navigates between pages.
+  - **Local Storage Caching**: The heavy index of 10,000+ coins and logos is cached in `localStorage` with a 24-hour Time-to-Live (TTL). This eliminates the need to fetch the massive directory on every search box focus or keystroke.
+- **Hook-Level Optimization (Avoiding Unnecessary Re-renders)**:
+  - **`useMemo`**: Heavy calculations—such as calculations of chunk size for aggregating raw CoinGecko ticks into candlesticks, calculating the minimum/maximum bounds, and sorting the search suggestions list—are wrapped in `useMemo` hooks. They are only recalculated when their dependency inputs change.
+  - **`useCallback`**: Input change handlers and navigation triggers are memoized to preserve component identity and prevent child components from re-rendering.
+- **Direct DOM Manipulation via Refs (Avoiding React State Lag)**:
+  - During mouse movement over the chart, the crosshair coordinates update at 60fps. Updating React state on every frame would trigger parent-component re-renders (including re-calculating layouts). 
+  - To prevent this, the crosshair listener writes values directly to the DOM nodes using `useRef` (e.g. `openStatRef`, `highStatRef`, etc.), bypassing the React render pipeline entirely and achieving buttery-smooth 60fps interaction.
+
