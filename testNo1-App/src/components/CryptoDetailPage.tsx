@@ -419,7 +419,7 @@ export const CryptoDetailPage: React.FC = () => {
           </div>
 
           {/* Quick Watchlist Section */}
-          <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+          <div className="detail-watchlist-section">
             <Text style={{ 
               color: token.colorTextDescription, 
               fontSize: 10, 

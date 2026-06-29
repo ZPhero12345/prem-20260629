@@ -38,6 +38,13 @@ body {
   box-sizing: border-box;
 }
 
+.detail-watchlist-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
 .watchlist-scroll-container {
   flex: 1;
   overflow-y: auto;
@@ -80,6 +87,12 @@ body {
     height: auto;
     border-left: none !important;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .detail-watchlist-section {
+    flex: none;
+    overflow: visible;
+    height: auto;
   }
 }
 
