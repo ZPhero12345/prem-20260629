@@ -32,7 +32,7 @@ The application was designed under several key architectural constraints:
 - [Walkthrough Video Link (Replace with your actual link)](#)
 
 ### 🎨 UI Design Ideas Link
-- [https://stitch.withgoogle.com/projects/11199194387275475295](#)
+- [Google Stitch UI Design Ideas](https://stitch.withgoogle.com/projects/11199194387275475295)
 
 ---
 
