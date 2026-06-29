@@ -13,7 +13,7 @@ This repository contains the Fullstack Engineering Assessment covering two prima
 > You can click the navigation bar links at the top of any page or the test title links below to view the in-depth **solutions**, **architectural design ideas**, and **technical implementation details** for each test.
 
 1. **[Test No. 1: Cryptocurrency Price Chart (Crypto Explorer)](./docs/test1-crypto-chart.md)**
-   A responsive React Client-Side Single Page Application (SPA) designed to search and display live-updated cryptocurrency price charts and detailed OHLC statistics. Built with client-side routing, caching layers, typo-tolerant search suggestions, and interactive TradingView charts.
+   A responsive React Client-Side Single Page Application (SPA) designed to search and display live-updated cryptocurrency price charts and detailed OHLC statistics. **The application has been named "Crypto Explorer"** and is built with client-side routing, caching layers, typo-tolerant search suggestions, and interactive TradingView charts.
    
 2. **[Test No. 2: Stock Profit Calculator (Max Profit Algorithm)](./docs/test2-max-profit.md)**
    A highly optimized TypeScript algorithm and Jest testing suite designed to calculate the maximum potential profit from stock prices, running in linear $\mathcal{O}(n)$ time complexity and constant $\mathcal{O}(1)$ space complexity.
