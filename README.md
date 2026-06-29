@@ -123,8 +123,8 @@ Make sure you have [Node.js (v20+)](https://nodejs.org/) and [pnpm](https://pnpm
 ### Implementation Highlights
 
 - **Smart Search & Suggestions (6a, 6b):**
-  - Displays the top 15 assets by **Market Cap** (e.g. Bitcoin, Ethereum, Solana) immediately when the search box receives focus.
-  - Features fuzzy search tolerance using the **Levenshtein Distance** algorithm. If a user types "etherium" or makes a typo, the application calculates spelling distance against a locally cached index of 10,000+ coins to recommend the correct asset.
+  - **Fuzzy Search (6a):** Allows users to search without entering the exact name (e.g. typing "etherium" matches "ethereum") using a local Levenshtein spelling distance algorithm.
+  - **Suggestions on Focus (6b):** As originally requested in the assessment guidelines, the search box displays quick suggestions when focused. This behavior was customized per the latest product requirements to suggest the top 15 coins sorted by **Market Cap** (e.g. Bitcoin, Ethereum, Solana) instead of trending coins.
 - **Time Range Control (6c, 6d):**
   - Defaults charts to **30 Days** on initial load.
   - Offers a clean set of essential ranges: **1 Day**, **7 Days**, **30 Days**, **90 Days** (combining candles to prevent screen clutter).
