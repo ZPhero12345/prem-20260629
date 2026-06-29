@@ -8,7 +8,7 @@ export function findMaxProfit(stockPriceList: number[]): number {
 
   for (let i = 1; i < stockPriceList.length; i++) {
     const currentPrice = stockPriceList[i];
-    
+
     if (currentPrice < minPrice) {
       minPrice = currentPrice;
     } else {
@@ -23,7 +23,7 @@ export function findMaxProfit(stockPriceList: number[]): number {
 }
 
 function main() {
-  const stockPriceList = [2, 3, 6, 4, 3];
+  const stockPriceList = [2, 3, 1, 4, 3, 10, 8, 5];
   const maxProfit = findMaxProfit(stockPriceList);
   console.log(`Stock Prices: [${stockPriceList.join(', ')}]`);
   console.log(`Maximum Profit: ${maxProfit}`);
