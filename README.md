@@ -58,6 +58,27 @@ graph TD
 
 ## 🚀 Getting Started / How to Run
 
+### Environment Variables & API Key Handling
+
+The application communicates with the CoinGecko API and relies on the following environment variables (defined in your local `.env` file):
+- `VITE_COINGECKO_API_KEY`: Your CoinGecko API key.
+- `VITE_USE_API_KEY`: Set to `true` to authenticate API calls with the key, or `false` to use the public demo endpoint.
+
+> [!IMPORTANT]
+> **Why are API keys embedded in Docker?**
+> Vite compiles environment variables (prefixed with `VITE_`) directly into the production JavaScript bundle at **build-time**. Passing runtime variables via `docker run -e` will **not** work because the static client files have already been built. Therefore, the variables must be present during the `docker build` phase.
+
+#### Using Your Own API Key with Docker
+If you want to build the Docker image using your own API key instead of the default fallback keys, pass them as `--build-arg` options during the build process:
+```bash
+docker build -t test-no1-app \
+  --build-arg VITE_COINGECKO_API_KEY="YOUR_ACTUAL_API_KEY" \
+  --build-arg VITE_USE_API_KEY="true" \
+  ./testNo1-App
+```
+
+---
+
 ### Docker Setup (Primary Method)
 
 The project includes a multi-stage Docker build to build and serve the application locally under Nginx.
