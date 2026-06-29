@@ -49,15 +49,6 @@ export const CryptoDetailPage: React.FC = () => {
     enabled: filter === "trending"
   });
 
-  // Fetch public corporate holdings dynamically (commented out for now)
-  /*
-  const { data: treasuryData, isLoading: treasuryLoading, isError: treasuryError, refetch: refetchTreasury } = useQuery({
-    queryKey: ["publicTreasury", coinId],
-    queryFn: () => fetchPublicTreasury(coinId),
-    staleTime: 10 * 60 * 1000,
-    retry: 0,
-  });
-  */
 
   const coinDetails = assetData?.coinDetails || {
     name: coinId.charAt(0).toUpperCase() + coinId.slice(1),
@@ -267,79 +258,6 @@ export const CryptoDetailPage: React.FC = () => {
             closeStatRef={closeStatRef}
             overallOhlc={overallOhlc}
           />
-
-          {/* Dynamic Corporate Holdings Card commented out for now
-          {((["bitcoin", "ethereum", "solana"].includes(coinId.toLowerCase()) && (treasuryLoading || treasuryError)) || 
-            (treasuryData && treasuryData.companies && treasuryData.companies.length > 0)) && (
-            <Card
-              title={
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <GlobalOutlined style={{ color: "#ff6b35" }} />
-                  <span style={{ color: token.colorText, fontSize: 14, fontWeight: 700 }}>
-                    {coinDetails.name} Corporate Holdings
-                  </span>
-                </div>
-              }
-              style={{
-                background: token.colorBgContainer,
-                border: `1px solid ${token.colorBorderSecondary}`,
-                borderRadius: 8,
-                marginTop: 24,
-                transition: "background 0.3s, border-color 0.3s"
-              }}
-              styles={{ body: { padding: treasuryError ? "24px" : 0 } }}
-            >
-              {treasuryError ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 12px", gap: 12 }}>
-                  <Text type="secondary" style={{ fontSize: 13 }}>Failed to load treasury data for {coinDetails.name}.</Text>
-                  <Button onClick={() => refetchTreasury()} size="small" type="primary">Reload</Button>
-                </div>
-              ) : treasuryLoading ? (
-                <div style={{ display: "flex", justifyContent: "center", padding: 24 }}>
-                  <Spin size="small" />
-                </div>
-              ) : (
-                <Table
-                  dataSource={treasuryData?.companies || []}
-                  pagination={false}
-                  size="small"
-                  showHeader={true}
-                  rowKey="name"
-                  columns={[
-                    {
-                      title: "Company",
-                      dataIndex: "name",
-                      key: "name",
-                      render: (name, record: any) => (
-                        <div>
-                          <Text style={{ color: token.colorText, fontWeight: 600, display: "block" }}>{name}</Text>
-                          <Text type="secondary" style={{ fontSize: 10 }}>{record.symbol} • {record.country}</Text>
-                        </div>
-                      )
-                    },
-                    {
-                      title: "Holdings",
-                      dataIndex: "total_holdings",
-                      key: "total_holdings",
-                      align: "right",
-                      render: (val: number) => <Text style={{ color: token.colorText, fontWeight: 600 }}>{val.toLocaleString()} {coinDetails.symbol.toUpperCase()}</Text>
-                    },
-                    {
-                      title: "Value",
-                      dataIndex: "total_current_value_usd",
-                      key: "total_current_value_usd",
-                      align: "right",
-                      render: (val: number) => {
-                        if (val >= 1e9) return <Text style={{ color: token.colorText }}>${(val / 1e9).toFixed(2)}B</Text>;
-                        return <Text style={{ color: token.colorText }}>${(val / 1e6).toFixed(1)}M</Text>;
-                      }
-                    }
-                  ]}
-                />
-              )}
-            </Card>
-          )}
-          */}
         </div>
 
         {/* RIGHT COLUMN: OHLC and Watchlist */}
