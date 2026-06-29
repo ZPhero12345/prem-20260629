@@ -127,7 +127,7 @@ Make sure you have [Node.js (v20+)](https://nodejs.org/) and [pnpm](https://pnpm
 
 ## 📁 Repository Directory Index
 - [README.md](README.md) - Main Index and Quick Start Guide.
-- [docs/test1-crypto-chart.md](./docs/test1-crypto-chart.md) - Detailed product decisions, TradingView Lightweight Charts details, table calculations, and performance metrics for Test 1.
-- [docs/test2-max-profit.md](./docs/test2-max-profit.md) - Algorithm implementation details, Levenshtein details, and the 12-case Test Plan Table for Test 2.
+- [docs/test1-crypto-chart.md](./docs/test1-crypto-chart.md) - Detailed product decisions, TradingView Lightweight Charts details, Levenshtein fuzzy match details, table calculations, and performance metrics for Test 1.
+- [docs/test2-max-profit.md](./docs/test2-max-profit.md) - Algorithm implementation details, complexity analysis, and the 12-case Test Plan Table for Test 2.
 - [testNo1-App/](./testNo1-App) - Crypto Explorer web application project directory.
 - [testNo2-App/](./testNo2-App) - Max Profit Algorithm TypeScript project directory.
