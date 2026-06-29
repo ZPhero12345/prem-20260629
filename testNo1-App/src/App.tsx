@@ -6,7 +6,7 @@ import { SearchBar } from "./components/SearchBar";
 import { TrendingBar } from "./components/TrendingBar";
 import { MainTrendPage } from "./components/MainTrendPage";
 import { CryptoDetailPage } from "./components/CryptoDetailPage";
-import { fetchTrendingCoins, fetchGlobalStats } from "./utils/api";
+import { fetchTrendingCoins, fetchGlobalStats, fetchMarketCoins } from "./utils/api";
 import type { TrendingCoin } from "./utils/api";
 import { Typography, ConfigProvider, theme, Alert } from "antd";
 
@@ -34,6 +34,14 @@ function MainAppContent() {
     queryKey: ["trendingCoins"],
     queryFn: fetchTrendingCoins,
     staleTime: 60000,
+    retry: 1,
+  });
+
+  // Fetch top 15 market cap coins for search box suggestions
+  const { data: topMarketCoins = [] } = useQuery({
+    queryKey: ["topMarketCoins"],
+    queryFn: () => fetchMarketCoins(undefined, 15),
+    staleTime: 5 * 60 * 1000,
     retry: 1,
   });
 
@@ -87,7 +95,7 @@ function MainAppContent() {
           <SearchBar 
             onSelectAsset={(id) => navigate(`/coin/${id}`)} 
             onFocusStateChange={setIsSearchFocused} 
-            trendingCoins={trendingCoins}
+            suggestedCoins={topMarketCoins}
           />
         }
       >

@@ -2,15 +2,15 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AutoComplete, Input, Spin, theme } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { searchCoins, initializeCoinsCache } from "../utils/api";
-import type { SearchResult, TrendingCoin } from "../utils/api";
+import type { SearchResult } from "../utils/api";
 
 interface SearchBarProps {
   onSelectAsset: (id: string) => void;
   onFocusStateChange: (focused: boolean) => void;
-  trendingCoins?: TrendingCoin[];
+  suggestedCoins?: any[];
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStateChange, trendingCoins = [] }) => {
+export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStateChange, suggestedCoins = [] }) => {
   const { token } = theme.useToken();
   const [value, setValue] = useState("");
   const [options, setOptions] = useState<{ value: string; label: React.ReactNode }[]>([]);
@@ -22,38 +22,42 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectAsset, onFocusStat
     initializeCoinsCache();
   }, []);
 
-  // Helper to map and show trending suggestions when search query is empty
+  // Helper to map and show default suggestions when search query is empty
   const showDefaultSuggestions = useCallback(() => {
-    if (!trendingCoins || trendingCoins.length === 0) {
+    if (!suggestedCoins || suggestedCoins.length === 0) {
       setOptions([]);
       return;
     }
-    const mapped = trendingCoins.slice(0, 15).map((coin) => ({
-      value: coin.item.id,
+    const mapped = suggestedCoins.slice(0, 15).map((coin) => ({
+      value: coin.id,
       label: (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 8px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img src={coin.item.thumb} alt={coin.item.name} style={{ width: 20, height: 20, borderRadius: "50%" }} />
-            <span style={{ fontWeight: 500 }}>{coin.item.name}</span>
-            <span style={{ color: "#8b90a0", fontSize: 12 }}>{coin.item.symbol.toUpperCase()}</span>
+            {coin.image ? (
+              <img src={coin.image} alt={coin.name} style={{ width: 20, height: 20, borderRadius: "50%" }} />
+            ) : (
+              <div style={{ width: 20, height: 20 }} />
+            )}
+            <span style={{ fontWeight: 500 }}>{coin.name}</span>
+            <span style={{ color: "#8b90a0", fontSize: 12 }}>{coin.symbol.toUpperCase()}</span>
           </div>
-          <span style={{ fontSize: 11, color: "#8b90a0" }}>#{coin.item.market_cap_rank || "N/A"}</span>
+          <span style={{ fontSize: 11, color: "#8b90a0" }}>#{coin.market_cap_rank || "N/A"}</span>
         </div>
       ),
     }));
     setOptions(mapped);
-  }, [trendingCoins]);
+  }, [suggestedCoins]);
 
-  // Update suggestions if trendingCoins load in after focus
+  // Update suggestions if suggestedCoins load in after focus
   useEffect(() => {
-    if (!value.trim() && options.length === 0 && trendingCoins.length > 0) {
+    if (!value.trim() && options.length === 0 && suggestedCoins.length > 0) {
       // populate suggestions if we have focus
       const isFocused = document.activeElement === document.querySelector(".ant-select-selection-search-input");
       if (isFocused) {
         showDefaultSuggestions();
       }
     }
-  }, [trendingCoins, value, options.length, showDefaultSuggestions]);
+  }, [suggestedCoins, value, options.length, showDefaultSuggestions]);
 
   const handleSearch = async (searchText: string) => {
     if (!searchText.trim()) {

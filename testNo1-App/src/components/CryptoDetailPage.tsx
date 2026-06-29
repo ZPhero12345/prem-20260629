@@ -364,14 +364,33 @@ export const CryptoDetailPage: React.FC = () => {
             }}>
               Key Statistics
             </Text>
+            {/* Top row: Market Cap (left) and Volume (right) */}
+            <div style={{ 
+              display: "flex", 
+              justifyContent: "space-between", 
+              marginBottom: 12,
+              padding: "0 4px"
+            }}>
+              <div>
+                <Text type="secondary" style={{ fontSize: 10, textTransform: "uppercase", display: "block", marginBottom: 2 }}>Market Cap</Text>
+                <Text style={{ fontSize: 15, fontWeight: 700, color: token.colorText }}>{coinDetails.marketCap}</Text>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <Text type="secondary" style={{ fontSize: 10, textTransform: "uppercase", display: "block", marginBottom: 2 }}>Volume (24h)</Text>
+                <Text style={{ fontSize: 15, fontWeight: 700, color: token.colorText }}>{coinDetails.volume}</Text>
+              </div>
+            </div>
+
+            {/* Separator */}
+            <div style={{ borderBottom: `1px solid ${token.colorBorderSecondary}`, marginBottom: 10, marginTop: 4 }} />
+
+            {/* OHLC list */}
             <div style={{ display: "flex", flexDirection: "column" }}>
               {[
                 { label: "Open", ref: openStatRef, color: token.colorText },
                 { label: "High", ref: highStatRef, color: token.colorSuccess },
                 { label: "Low", ref: lowStatRef, color: token.colorError },
                 { label: "Close", ref: closeStatRef, color: token.colorSuccess },
-                { label: "Market Cap", val: coinDetails.marketCap, color: token.colorText },
-                { label: "Volume (24h)", val: coinDetails.volume, color: token.colorText },
               ].map((stat, idx) => (
                 <div 
                   key={idx} 
@@ -385,11 +404,7 @@ export const CryptoDetailPage: React.FC = () => {
                   }}
                 >
                   <Text type="secondary" style={{ fontSize: 11 }}>{stat.label}</Text>
-                  {stat.ref ? (
-                    <span ref={stat.ref} style={{ fontWeight: 600, color: stat.color }}>$0.00</span>
-                  ) : (
-                    <Text style={{ fontWeight: 600, color: stat.color }}>{stat.val}</Text>
-                  )}
+                  <span ref={stat.ref} style={{ fontWeight: 600, color: stat.color }}>$0.00</span>
                 </div>
               ))}
             </div>
