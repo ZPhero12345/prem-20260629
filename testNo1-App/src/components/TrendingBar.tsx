@@ -35,6 +35,23 @@ export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading
     );
   };
 
+  const formatPrice = (priceVal: any) => {
+    if (priceVal === undefined || priceVal === null) return "N/A";
+    
+    let num = typeof priceVal === "number" ? priceVal : parseFloat(String(priceVal).replace(/[^0-9.-]/g, ""));
+    
+    if (isNaN(num)) {
+      return String(priceVal);
+    }
+    
+    if (num >= 1) {
+      return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    } else {
+      // For coins worth less than $1, show up to 6 decimal places for precision
+      return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
+    }
+  };
+
   return (
     <div style={{ marginBottom: 24 }}>
       <Text style={{ display: "block", marginBottom: 12, fontWeight: 600, color: token.colorTextDescription, textTransform: "uppercase", fontSize: 12, letterSpacing: "0.05em" }}>
@@ -87,7 +104,7 @@ export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading
 
                 <div style={{ marginTop: 12 }}>
                   <Text style={{ fontSize: 16, fontWeight: 700, color: token.colorText }}>
-                    {coin.item.data.price}
+                    {formatPrice(coin.item.data.price)}
                   </Text>
                 </div>
               </Card>

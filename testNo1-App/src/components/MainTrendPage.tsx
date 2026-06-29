@@ -184,6 +184,7 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
           }
           styles={{ body: { padding: 24 } }}
           style={{
+            height: "calc(100% - 24px)",
             background: token.colorBgContainer,
             border: `1px solid ${token.colorBorderSecondary}`,
             marginBottom: 24,
@@ -385,6 +386,7 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
         <Card
           title={<span style={{ color: token.colorText, fontSize: 14, fontWeight: 700 }}>Pairs</span>}
           style={{
+            height: "calc(100% - 24px)",
             background: token.colorBgContainer,
             border: `1px solid ${token.colorBorderSecondary}`,
             borderRadius: 8,
