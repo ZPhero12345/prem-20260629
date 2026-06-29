@@ -5,7 +5,7 @@
 This repository contains the Fullstack Engineering Assessment covering two primary tasks:
 
 1. **Test No. 1: Cryptocurrency Price Chart (Crypto Explorer)**
-   A user-friendly, responsive Single Page Application (SPA) designed to search and display live-updated cryptocurrency price charts and detailed OHLC (Open, High, Low, Close) statistics. It features smart search suggestions, custom scrollable trending coins, and pre-configured time ranges, running in a clean containerized environment.
+    A responsive Client-side Single Page Application (SPA) designed to search and display live-updated cryptocurrency price charts and detailed OHLC (Open, High, Low, Close) statistics. Using client-side routing (React Router), the application features two main pages: a **Trends Dashboard** and a detailed **Coin Statistics & Charts Page**, alongside smart search suggestions and custom scrollable trending coins.
    
 2. **Test No. 2: Stock Profit Calculator**
    A TypeScript utility that calculates the maximum possible profit from buying and selling a stock once, given an array of historical stock prices, running in optimal $O(n)$ time complexity and $O(1)$ space complexity. It includes unit tests built with Jest.
