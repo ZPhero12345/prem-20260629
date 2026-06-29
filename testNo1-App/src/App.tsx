@@ -8,8 +8,7 @@ import { MainTrendPage } from "./components/MainTrendPage";
 import { CryptoDetailPage } from "./components/CryptoDetailPage";
 import { fetchTrendingCoins, fetchGlobalStats } from "./utils/api";
 import type { TrendingCoin } from "./utils/api";
-import { Row, Col, Card, Typography, ConfigProvider, theme, Alert } from "antd";
-import { ArrowUpOutlined } from "@ant-design/icons";
+import { Typography, ConfigProvider, theme, Alert } from "antd";
 
 const { Title, Text } = Typography;
 
@@ -105,45 +104,14 @@ function MainAppContent() {
                 />
               )}
               {/* Top Header section */}
-              <Row gutter={[24, 24]} align="middle" style={{ marginBottom: 24 }}>
-                <Col xs={24}>
-                  <Card 
-                    style={{ 
-                      background: isDarkMode ? "#1c1b1b" : "#ffffff", 
-                      border: `1px solid ${isDarkMode ? "#303030" : "#e8e8e8"}`,
-                      transition: "background 0.3s, border-color 0.3s"
-                    }} 
-                    styles={{ body: { padding: "12px 20px" } }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <Text style={{ color: "#8b90a0", fontSize: 11, textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
-                          EQUITY BALANCE
-                        </Text>
-                        <Title level={4} style={{ margin: "4px 0 0 0", color: dynamicTextColor, fontWeight: 700 }}>
-                          $128,450.00
-                        </Title>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <span style={{
-                          color: isDarkMode ? "#6de039" : "#45b703",
-                          fontWeight: 600,
-                          fontSize: 14,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4
-                        }}>
-                          <ArrowUpOutlined style={{ fontSize: 11 }} />
-                          $4,210.00 (3.2%)
-                        </span>
-                        <Text type="secondary" style={{ fontSize: 11 }}>
-                          Buying Power: $12,045.00
-                        </Text>
-                      </div>
-                    </div>
-                  </Card>
-                </Col>
-              </Row>
+              <div style={{ marginBottom: 28 }}>
+                <Title level={2} style={{ margin: "0 0 8px 0", color: dynamicTextColor, fontWeight: 700 }}>
+                  Crypto View
+                </Title>
+                <Text style={{ color: isDarkMode ? "#8b90a0" : "#595959", fontSize: 14, display: "block", lineHeight: "1.6" }}>
+                  Explore live-updated cryptocurrency price charts and detailed statistics (OHLC) in a user-friendly interface. Search for any coin with smart suggestions, view trending assets, and track historical price movements across essential time ranges.
+                </Text>
+              </div>
 
               {/* Suggest trending coins */}
               {trendingCoins.length > 0 && (

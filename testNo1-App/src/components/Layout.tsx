@@ -1,10 +1,9 @@
 import React from "react";
-import { Layout as AntLayout, Typography, Button } from "antd";
+import { Layout as AntLayout, Button } from "antd";
 import { ArrowLeftOutlined, SunOutlined, MoonOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Header, Content } = AntLayout;
-const { Title } = Typography;
 
 import type { GlobalStats } from "../utils/api";
 
