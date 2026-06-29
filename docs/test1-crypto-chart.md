@@ -6,7 +6,9 @@
 
 ## Project Overview
 
-A responsive React Client-Side Single Page Application (SPA) designed to search and display live-updated cryptocurrency price charts and detailed OHLC (Open, High, Low, Close) statistics. Using client-side routing (React Router), the application features two main pages: a **Trends Dashboard** and a detailed **Coin Statistics & Charts Page**, alongside smart search suggestions and custom scrollable trending coins.
+A responsive React Client-Side Single Page Application (SPA) designed to search and display live-updated cryptocurrency price charts and detailed OHLC (Open, High, Low, Close) statistics. Using client-side routing (React Router), the application features two main pages: a **Trends Dashboard** and a detailed **Coin Statistics & Charts Page**, alongside smart search suggestions and custom scrollable trending coins. 
+
+**Target Audience:** The platform is designed to be highly accessible and user-friendly, catering primarily to **general, everyday users and casual observers** rather than professional investors, technical analysts, or high-frequency day traders who require specialized indicators and low-latency order-execution modules.
 
 ---
 
