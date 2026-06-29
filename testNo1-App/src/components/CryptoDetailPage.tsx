@@ -200,7 +200,7 @@ export const CryptoDetailPage: React.FC = () => {
     return sortedList.slice(0, 15).map((coin: any) => ({
       id: coin.id,
       symbol: coin.symbol.toUpperCase(),
-      last: coin.current_price !== undefined && coin.current_price !== null 
+      last: coin.current_price !== undefined && coin.current_price !== null
         ? `$${coin.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
         : "-",
       change: coin.price_change_percentage_24h !== undefined && coin.price_change_percentage_24h !== null
@@ -214,19 +214,19 @@ export const CryptoDetailPage: React.FC = () => {
 
 
   return (
-    <div style={{ 
-      background: "transparent", 
-      height: "100%", 
-      width: "100%", 
-      display: "flex", 
+    <div style={{
+      background: "transparent",
+      height: "100%",
+      width: "100%",
+      display: "flex",
       flexDirection: "column",
       overflow: "hidden"
     }}>
       {/* Top bar: Back button, title, and actions */}
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center", 
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
         padding: "8px 24px",
         height: 52,
         borderBottom: `1px solid ${token.colorBorderSecondary}`,
@@ -235,10 +235,10 @@ export const CryptoDetailPage: React.FC = () => {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {coinDetails.image ? (
-            <img 
-              src={coinDetails.image} 
-              alt={coinDetails.name} 
-              style={{ width: 28, height: 28, borderRadius: "50%", display: "block" }} 
+            <img
+              src={coinDetails.image}
+              alt={coinDetails.name}
+              style={{ width: 28, height: 28, borderRadius: "50%", display: "block" }}
             />
           ) : (
             <div style={{ width: 28, height: 28, borderRadius: "50%", background: token.colorBorderSecondary }} />
@@ -258,7 +258,7 @@ export const CryptoDetailPage: React.FC = () => {
       {/* Main split-pane content */}
       <div className="detail-layout-container">
         {/* LEFT COLUMN: Candlestick Chart */}
-        <div className="detail-chart-column" style={{ 
+        <div className="detail-chart-column" style={{
           background: token.colorBgContainer,
           padding: "20px 24px"
         }}>
@@ -350,7 +350,7 @@ export const CryptoDetailPage: React.FC = () => {
         </div>
 
         {/* RIGHT COLUMN: OHLC and Watchlist */}
-        <div className="detail-sidebar-column" style={{ 
+        <div className="detail-sidebar-column" style={{
           borderLeft: `1px solid ${token.colorBorderSecondary}`,
           background: token.colorBgContainer,
           padding: "16px 12px",
@@ -360,11 +360,11 @@ export const CryptoDetailPage: React.FC = () => {
         }}>
           {/* OHLC Statistics Section */}
           <div>
-            <Text style={{ 
-              color: token.colorTextDescription, 
-              fontSize: 10, 
-              fontWeight: 700, 
-              textTransform: "uppercase", 
+            <Text style={{
+              color: token.colorTextDescription,
+              fontSize: 10,
+              fontWeight: 700,
+              textTransform: "uppercase",
               letterSpacing: "0.05em",
               display: "block",
               marginBottom: 8,
@@ -373,9 +373,9 @@ export const CryptoDetailPage: React.FC = () => {
               Key Statistics
             </Text>
             {/* Top row: Market Cap (left) and Volume (right) */}
-            <div style={{ 
-              display: "flex", 
-              justifyContent: "space-between", 
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
               marginBottom: 12,
               padding: "0 4px"
             }}>
@@ -400,15 +400,15 @@ export const CryptoDetailPage: React.FC = () => {
                 { label: "Low", ref: lowStatRef, color: token.colorError },
                 { label: "Close", ref: closeStatRef, color: token.colorSuccess },
               ].map((stat, idx) => (
-                <div 
-                  key={idx} 
-                  style={{ 
-                    display: "flex", 
-                    justifyContent: "space-between", 
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
                     alignItems: "center",
-                    padding: "6px 4px", 
+                    padding: "6px 4px",
                     borderBottom: `1px solid ${token.colorBorderSecondary}`,
-                    fontSize: 12 
+                    fontSize: 12
                   }}
                 >
                   <Text type="secondary" style={{ fontSize: 11 }}>{stat.label}</Text>
@@ -419,12 +419,12 @@ export const CryptoDetailPage: React.FC = () => {
           </div>
 
           {/* Quick Watchlist Section */}
-          <div className="detail-watchlist-section">
-            <Text style={{ 
-              color: token.colorTextDescription, 
-              fontSize: 10, 
-              fontWeight: 700, 
-              textTransform: "uppercase", 
+          <div className="detail-watchlist-container">
+            <Text style={{
+              color: token.colorTextDescription,
+              fontSize: 10,
+              fontWeight: 700,
+              textTransform: "uppercase",
               letterSpacing: "0.05em",
               display: "block",
               marginBottom: 8,
@@ -432,9 +432,9 @@ export const CryptoDetailPage: React.FC = () => {
             }}>
               Watchlist
             </Text>
-            <div style={{ 
-              display: "flex", 
-              justifyContent: "space-between", 
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
               marginBottom: 10,
               padding: "0 4px",
@@ -450,10 +450,10 @@ export const CryptoDetailPage: React.FC = () => {
                   losers: "Top 24h Price Losers"
                 };
                 return (
-                  <Tooltip 
+                  <Tooltip
                     key={t}
-                    title={filterTitles[t]} 
-                    color="#1e222d" 
+                    title={filterTitles[t]}
+                    color="#1e222d"
                     overlayInnerStyle={{ fontSize: 10, fontWeight: 600, padding: "4px 8px", borderRadius: 4 }}
                     mouseEnterDelay={0.3}
                   >
@@ -479,16 +479,16 @@ export const CryptoDetailPage: React.FC = () => {
                 );
               })}
             </div>
-            
+
             {/* Column Names Header Row */}
-            <div style={{ 
-              display: "flex", 
-              justifyContent: "space-between", 
-              padding: "2px 6px 6px 6px", 
-              fontSize: 9, 
-              fontWeight: 700, 
-              color: token.colorTextDescription, 
-              textTransform: "uppercase", 
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "2px 6px 6px 6px",
+              fontSize: 9,
+              fontWeight: 700,
+              color: token.colorTextDescription,
+              textTransform: "uppercase",
               letterSpacing: "0.05em",
               borderBottom: `1px solid ${token.colorBorderSecondary}`,
               marginBottom: 4
