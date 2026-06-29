@@ -92,6 +92,7 @@ graph TD
 
 ### 3. Limitations & Considerations
 - **API Rate Limits:** The application is authenticated using a **CoinGecko Demo API Key (Free tier)**, which enforces a strict rate limit of **30 requests per minute** and returns HTTP Status 429 upon exhaustion. To prevent rate-limit blocks during active testing, the app implements background caching of the coin directory and uses React Query stale times to prevent double-fetching, falling back gracefully to cached mock data if rate limits are hit.
+- **Endpoint Access Restrictions:** The Demo API tier restricts access to several advanced, paid-only, or Pro endpoints (for instance, advanced historical data filters, certain global metrics, or public treasury corporate holdings API scopes). Because of these endpoint restrictions, the application focuses strictly on high-reliability, standard public data endpoints (such as `/coins/list`, `/coins/markets`, and `/coins/{id}/ohlc`) to ensure consistent operation without encountering permission errors.
 - **OHLC Resolution:** CoinGecko clusters candles automatically (e.g. 1-day range returns 30-minute granularity; 90-day range returns daily granularity). The chart handles this change in time resolution dynamically.
 
 ---
