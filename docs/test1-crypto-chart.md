@@ -99,6 +99,7 @@ graph TD
     - **3–30 Days**: Returns candles at a **4-hour** granularity.
     - **31 Days and beyond (90D, 180D, 365D)**: Returns candles at a **4-day** granularity.
   - Due to these fixed REST API groupings, certain short/medium-term ranges (like 7 days yielding 42 data points, or 90 days yielding 22 data points) cannot be dynamically scaled by the client into our target 80–150 candle sweet spot without introducing simulated data.
+  - **No Minute/Second-Level Charts for Short-Term Traders**: Because the finest available granularity provided by the CoinGecko public OHLC API is **30 minutes** (restricted to 1–2 days queries), the application does not support high-frequency charts (such as 1-minute, 5-minute, or second-level candlestick intervals). Consequently, minute-level trading indicators designed for scalp traders or short-term day traders were not implemented.
   - **Demo API Historical Window Restriction**: Under the CoinGecko Demo API (Free tier), queries for historical candlestick data are strictly restricted to the **past 365 days**. Querying parameters beyond `365` (such as looking for multi-year histories) will return authentication or endpoint scope errors, which is why the application limits its maximum range selector to exactly **1 Year (365 days)**.
 
 ---
