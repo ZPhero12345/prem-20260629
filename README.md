@@ -23,6 +23,12 @@ This repository contains the Fullstack Engineering Assessment covering two prima
 ## 🎨 Design & Documentation
 
 ### 📄 Product Design Review (PDR)
+- **[Read the Full Product Design Report (PDR) on Google Drive](https://drive.google.com/file/d/1dJshEEEzjEJCuy7_7hXV06acStEAT1vh/view?usp=sharing)**
+
+> [!NOTE]
+> **Design-First Development Approach**
+> Before any source code was written, a detailed Product Design Report (PDR) blueprint was established to layout the system architecture, mathematical algorithms, and deployment mechanics. The codebase was built following this technical specification as closely as possible to maintain structural alignment.
+
 The application was designed under several key architectural constraints:
 - **Search Tolerance:** Implementing fuzzy/Levenshtein algorithms locally when API endpoints rate-limit or fail, ensuring users can search with typos (e.g. typing "etherium" to retrieve "ethereum").
 - **Minimalist UX:** Restricting chart time-range options to prevent cognitive overload (e.g. choosing 1 Day, 7 Days, 30 Days, 90 Days).
