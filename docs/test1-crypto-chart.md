@@ -93,7 +93,13 @@ graph TD
 ### 3. Limitations & Considerations
 - **API Rate Limits:** The application is authenticated using a **CoinGecko Demo API Key (Free tier)**, which enforces a strict rate limit of **30 requests per minute** and returns HTTP Status 429 upon exhaustion. To prevent rate-limit blocks during active testing, the app implements background caching of the coin directory and uses React Query stale times to prevent double-fetching, falling back gracefully to cached mock data if rate limits are hit.
 - **Endpoint Access Restrictions:** The Demo API tier restricts access to several advanced, paid-only, or Pro endpoints (for instance, advanced historical data filters, certain global metrics, or public treasury corporate holdings API scopes).
-- **OHLC Resolution:** CoinGecko clusters candles automatically (e.g. 1-day range returns 30-minute granularity; 90-day range returns daily granularity). The chart handles this change in time resolution dynamically.
+- **OHLC Auto-Granularity & Data Constraints**:
+  - The `/coins/{id}/ohlc` endpoint automatically clusters price data points based on the queried range parameter (`days`):
+    - **1–2 Days**: Returns candles at a **30-minute** granularity.
+    - **3–30 Days**: Returns candles at a **4-hour** granularity.
+    - **31 Days and beyond (90D, 180D, 365D)**: Returns candles at a **4-day** granularity.
+  - Due to these fixed REST API groupings, certain short/medium-term ranges (like 7 days yielding 42 data points, or 90 days yielding 22 data points) cannot be dynamically scaled by the client into our target 80–150 candle sweet spot without introducing simulated data.
+  - **Demo API Historical Window Restriction**: Under the CoinGecko Demo API (Free tier), queries for historical candlestick data are strictly restricted to the **past 365 days**. Querying parameters beyond `365` (such as looking for multi-year histories) will return authentication or endpoint scope errors, which is why the application limits its maximum range selector to exactly **1 Year (365 days)**.
 
 ---
 
