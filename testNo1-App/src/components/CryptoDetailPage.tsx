@@ -18,7 +18,7 @@ export const CryptoDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { token } = theme.useToken();
 
-  const [selectedRange, setSelectedRange] = useState(1);
+  const [selectedRange, setSelectedRange] = useState(30);
   const [starred, setStarred] = useState(false);
   const [filter, setFilter] = useState<"rank" | "trending" | "gainers" | "losers">("rank");
 
@@ -80,12 +80,16 @@ export const CryptoDetailPage: React.FC = () => {
   const candlestickData = useMemo(() => {
     if (!ohlcData || ohlcData.length < 2) return [];
 
-    const targetCandles = 100;
+    const targetCandles = 120;
     const chunkSize = Math.max(1, Math.round(ohlcData.length / targetCandles));
 
     const candles = [];
-    for (let i = 0; i + chunkSize <= ohlcData.length; i += chunkSize) {
-      const slice = ohlcData.slice(i, i + chunkSize);
+    for (let i = 0; i < ohlcData.length; i += chunkSize) {
+      // If the remaining items after this chunk are fewer than chunkSize,
+      // combine them into this last chunk to ensure the latest data is not lost.
+      const isLastChunk = (i + chunkSize * 2 > ohlcData.length);
+      const end = isLastChunk ? ohlcData.length : (i + chunkSize);
+      const slice = ohlcData.slice(i, end);
       if (slice.length === 0) continue;
 
       const open = slice[0][1]; // Open of first candle in slice
@@ -103,6 +107,10 @@ export const CryptoDetailPage: React.FC = () => {
         low,
         close
       });
+
+      if (isLastChunk) {
+        break;
+      }
     }
 
     candles.sort((a, b) => a.time - b.time);
