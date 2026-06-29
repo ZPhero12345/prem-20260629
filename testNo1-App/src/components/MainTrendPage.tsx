@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Card, Typography, Row, Col, Table, theme, Segmented, Button } from "antd";
-import { StarFilled, StarOutlined, GlobalOutlined } from "@ant-design/icons";
+import { GlobalOutlined } from "@ant-design/icons";
 import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { fetchMarketCoins } from "../utils/api";
@@ -25,15 +25,6 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
 }) => {
   const { token } = theme.useToken();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [starredCoins, setStarredCoins] = useState<Record<string, boolean>>({
-    AVAX: true,
-    MATIC: true,
-    ADA: true
-  });
-
-  const toggleStar = (symbol: string) => {
-    setStarredCoins(prev => ({ ...prev, [symbol]: !prev[symbol] }));
-  };
 
   const [selectedCategory, setSelectedCategory] = useState<string>("");
 
@@ -433,9 +424,6 @@ export const MainTrendPage: React.FC<MainTrendPageProps> = ({
                 key: "symbol",
                 render: (text, record: any) => (
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div onClick={(e) => { e.stopPropagation(); toggleStar(text); }} style={{ cursor: "pointer" }}>
-                      {starredCoins[text] ? <StarFilled style={{ color: "#ffc107" }} /> : <StarOutlined style={{ color: token.colorTextDescription }} />}
-                    </div>
                     {record.image && (
                       <img src={record.image} alt={text} style={{ width: 16, height: 16, borderRadius: "50%" }} />
                     )}

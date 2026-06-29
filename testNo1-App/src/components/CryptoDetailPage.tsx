@@ -1,9 +1,5 @@
 import React, { useState, useMemo, useRef } from "react";
 import { Typography, theme, Tooltip } from "antd";
-import {
-  StarOutlined,
-  StarFilled
-} from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchCoinData, fetchMarketCoins, fetchTrendingCoins } from "../utils/api";
@@ -19,7 +15,6 @@ export const CryptoDetailPage: React.FC = () => {
   const { token } = theme.useToken();
 
   const [selectedRange, setSelectedRange] = useState(30);
-  const [starred, setStarred] = useState(false);
   const [filter, setFilter] = useState<"rank" | "trending" | "gainers" | "losers">("rank");
 
   const coinId = id || "bitcoin";
@@ -229,9 +224,6 @@ export const CryptoDetailPage: React.FC = () => {
           )}
           <Title level={4} style={{ margin: 0, color: token.colorText, display: "flex", alignItems: "center", gap: 8 }}>
             {coinDetails.name} ({coinDetails.symbol.toUpperCase()})
-            <span onClick={() => setStarred(!starred)} style={{ cursor: "pointer", fontSize: 16 }}>
-              {starred ? <StarFilled style={{ color: "#ffc107" }} /> : <StarOutlined style={{ color: token.colorTextDescription }} />}
-            </span>
           </Title>
         </div>
 
