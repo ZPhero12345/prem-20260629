@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Row, Col, Typography, Spin, theme } from "antd";
+import { Card, Typography, Spin, theme } from "antd";
 import type { TrendingCoin } from "../utils/api";
 import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 
@@ -37,13 +37,13 @@ export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading
 
   const formatPrice = (priceVal: any) => {
     if (priceVal === undefined || priceVal === null) return "N/A";
-    
+
     let num = typeof priceVal === "number" ? priceVal : parseFloat(String(priceVal).replace(/[^0-9.-]/g, ""));
-    
+
     if (isNaN(num)) {
       return String(priceVal);
     }
-    
+
     if (num >= 1) {
       return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     } else {
@@ -57,61 +57,74 @@ export const TrendingBar: React.FC<TrendingBarProps> = ({ trendingCoins, loading
       <Text style={{ display: "block", marginBottom: 12, fontWeight: 600, color: token.colorTextDescription, textTransform: "uppercase", fontSize: 12, letterSpacing: "0.05em" }}>
         Trending Now
       </Text>
-      <Row gutter={[16, 16]}>
-        {trendingCoins.slice(0, 4).map((coin) => {
+      <div
+        className="custom-horizontal-scroll"
+        style={{
+          display: "flex",
+          overflowX: "auto",
+          gap: 16,
+          paddingBottom: 12,
+          scrollbarWidth: "thin",
+          scrollbarColor: "rgba(255, 255, 255, 0.15) transparent",
+        }}
+      >
+        {trendingCoins.map((coin) => {
           const change24h = coin.item.data.price_change_percentage_24h.usd || 0;
           const isPositive = change24h >= 0;
 
           return (
-            <Col xs={24} sm={12} md={6} key={coin.item.id}>
-              <Card
-                hoverable
-                onClick={() => onSelectAsset(coin.item.id)}
-                style={{
-                  background: token.colorBgContainer,
-                  border: `1px solid ${token.colorBorderSecondary}`,
-                  cursor: "pointer",
-                  transition: "background 0.3s, border-color 0.3s"
-                }}
-                bodyStyle={{ padding: 16 }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    <img
-                      src={coin.item.thumb}
-                      alt={coin.item.name}
-                      style={{ width: 28, height: 28, borderRadius: "50%" }}
-                    />
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <Text style={{ fontWeight: 600, color: token.colorText }}>{coin.item.symbol.toUpperCase()}</Text>
-                        <span style={{
-                          color: isPositive ? token.colorSuccess : token.colorError,
-                          fontSize: 11,
-                          fontWeight: 500,
-                          display: "flex",
-                          alignItems: "center"
-                        }}>
-                          {isPositive ? <ArrowUpOutlined style={{ fontSize: 10 }} /> : <ArrowDownOutlined style={{ fontSize: 10 }} />}
-                          {Math.abs(change24h).toFixed(1)}%
-                        </span>
-                      </div>
-                      <Text type="secondary" style={{ fontSize: 12 }}>{coin.item.name}</Text>
+            <Card
+              key={coin.item.id}
+              hoverable
+              onClick={() => onSelectAsset(coin.item.id)}
+              style={{
+                flex: "0 0 calc((100% - 64px) / 4.25)",
+                minWidth: "220px",
+                background: token.colorBgContainer,
+                border: `1px solid ${token.colorBorderSecondary}`,
+                cursor: "pointer",
+                transition: "background 0.3s, border-color 0.3s"
+              }}
+              bodyStyle={{ padding: 16 }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <img
+                    src={coin.item.thumb}
+                    alt={coin.item.name}
+                    style={{ width: 28, height: 28, borderRadius: "50%" }}
+                  />
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <Text style={{ fontWeight: 600, color: token.colorText }}>{coin.item.symbol.toUpperCase()}</Text>
+                      <span style={{
+                        color: isPositive ? token.colorSuccess : token.colorError,
+                        fontSize: 11,
+                        fontWeight: 500,
+                        display: "flex",
+                        alignItems: "center"
+                      }}>
+                        {isPositive ? <ArrowUpOutlined style={{ fontSize: 10 }} /> : <ArrowDownOutlined style={{ fontSize: 10 }} />}
+                        {Math.abs(change24h).toFixed(1)}%
+                      </span>
                     </div>
+                    <Text type="secondary" style={{ fontSize: 12, display: "block", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {coin.item.name}
+                    </Text>
                   </div>
-                  {renderMiniSparkline(isPositive)}
                 </div>
+                {renderMiniSparkline(isPositive)}
+              </div>
 
-                <div style={{ marginTop: 12 }}>
-                  <Text style={{ fontSize: 16, fontWeight: 700, color: token.colorText }}>
-                    {formatPrice(coin.item.data.price)}
-                  </Text>
-                </div>
-              </Card>
-            </Col>
+              <div style={{ marginTop: 12 }}>
+                <Text style={{ fontSize: 16, fontWeight: 700, color: token.colorText }}>
+                  {formatPrice(coin.item.data.price)}
+                </Text>
+              </div>
+            </Card>
           );
         })}
-      </Row>
+      </div>
     </div>
   );
 };
